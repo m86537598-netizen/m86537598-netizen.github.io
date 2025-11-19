@@ -1,1 +1,199 @@
-tba
+import React, { useState, useEffect, useRef } from "react";
+
+// Fandom Wiki Live Editor - single-file React component
+// - Four editable panes: HTML, CSS, JavaScript, Wikitext
+// - Live preview in a sandboxed iframe using srcdoc
+// - Simple wikitext -> HTML converter for common constructs
+// - Tailwind used for layout and controls
+
+export default function FandomWikiLiveEditor() {
+  const [html, setHtml] = useState(`<div class=\"page-content\">\n  <h2>Example HTML</h2>\n  <p>This is a <strong>sample</strong> HTML block.</p>\n</div>`);
+  const [css, setCss] = useState(`/* Page / content area simulation */\nbody { font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; padding: 16px; }\n.page-content { max-width: 900px; margin: 0 auto; background: #fff; padding: 16px; border-radius: 8px; box-shadow: 0 6px 18px rgba(0,0,0,0.06); }\nh2 { font-size: 1.4rem; margin-bottom: .5rem }`);
+  const [js, setJs] = useState(`// Example JavaScript - runs inside the preview iframe\nconsole.log('Preview iframe ready');`);
+  const [wikitext, setWikitext] = useState(`== Example Wikitext ==\nThis is an '''example''' of ''wikitext''.\n* Bullet item 1\n* Bullet item 2\n\nVisit [[Main Page]] or [[Roblox Pet Story|Charlie page]].`);
+
+  const [previewSrcDoc, setPreviewSrcDoc] = useState("");
+  const [autoUpdate, setAutoUpdate] = useState(true);
+  const [applyFandomSkin, setApplyFandomSkin] = useState(true);
+  const timeoutRef = useRef(null);
+
+  // Basic wikitext -> HTML converter (supports headings, bold, italics, links, lists, templates)
+  function convertWikitextToHtml(wt) {
+    // escape HTML first
+    const escapeHtml = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    let out = escapeHtml(wt);
+
+    // Convert headings: == Heading ==, === etc
+    out = out.replace(/^=====(.+?)=====$/gim, '<h5>$1</h5>');
+    out = out.replace(/^====(.+?)====$/gim, '<h4>$1</h4>');
+    out = out.replace(/^===(.+?)===$/gim, '<h3>$1</h3>');
+    out = out.replace(/^==(.+?)==$/gim, '<h2>$1</h2>');
+    out = out.replace(/^=(.+?)=$/gim, '<h1>$1</h1>');
+
+    // Bold ('''text''') and italics (''text'')
+    out = out.replace(/'''(.+?)'''/g, '<strong>$1</strong>');
+    out = out.replace(/''(.+?)''/g, '<em>$1</em>');
+
+    // Links: [[Page|Label]] or [[Page]]
+    out = out.replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, '<a href="https://minecraft.fandom.com/wiki/$1">$2</a>');
+    out = out.replace(/\[\[([^\]]+)\]\]/g, '<a href="https://minecraft.fandom.com/wiki/$1">$1</a>');
+
+    // Templates: {{Template|x}} -> placeholder box
+    out = out.replace(/\{\{([^\}|]+)(?:\|([^\}]+))?\}\}/g, (m,p1,p2) => {
+      const params = p2 ? p2 : '';
+      return `<span class=\"fandom-template\">{{${p1}${params ? ' | ' + params : ''}}}</span>`;
+    });
+
+    // Lists: unordered
+    // Convert consecutive lines starting with * to <ul><li>..</li></ul>
+    out = out.replace(/(^|\n)(\*[^\n]+(\n\*[^\n]+)*)/g, (m, p1, p2) => {
+      const items = p2.split('\n').map(l => l.replace(/^\*\s?/, ''));
+      return p1 + '<ul>' + items.map(i=>`<li>${i}</li>`).join('') + '</ul>';
+    });
+
+    // Numbered lists starting with #
+    out = out.replace(/(^|\n)(\#[^\n]+(\n\#[^\n]+)*)/g, (m, p1, p2) => {
+      const items = p2.split('\n').map(l => l.replace(/^\#\s?/, ''));
+      return p1 + '<ol>' + items.map(i=>`<li>${i}</li>`).join('') + '</ol>';
+    });
+
+    // Simple paragraphs: wrap lines separated by blank lines
+    const parts = out.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+    out = parts.map(p => {
+      // if p already starts with block tag like <h> or <ul> or <ol> or <pre> leave it
+      if (/^<h|^<ul|^<ol|^<pre|^<table|^<div|^<blockquote/.test(p)) return p;
+      return `<p>${p.replace(/\n/g, '<br/>')}</p>`;
+    }).join('\n');
+
+    return out;
+  }
+
+  // Build the iframe srcdoc
+  const buildSrcDoc = () => {
+    const fandomCss = applyFandomSkin ? `
+      /* minimal fandom-like styles to simulate content */
+      body { background: #ececec; }
+      .mw-parser-output { font-family: inherit; color: #111; }
+      .fandom-template { display: inline-block; background: #f3f3ff; border: 1px dashed #9aa; padding: 2px 6px; border-radius: 4px; }
+    ` : '';
+
+    const combinedHtml = `<!doctype html>
+<html>
+<head>
+<meta charset=\"utf-8\" />
+<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\" />
+<style>
+${fandomCss}
+${css}
+</style>
+</head>
+<body>
+<div class=\"mw-parser-output\">${convertWikitextToHtml(wikitext)}</div>
+<div id=\"user-html\">${html}</div>
+<script>
+try {
+${js}
+} catch(e) { console.error(e); }
+</script>
+</body>
+</html>`;
+
+    return combinedHtml;
+  };
+
+  // Update preview - debounced when autoUpdate on
+  useEffect(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (autoUpdate) {
+      timeoutRef.current = setTimeout(() => {
+        setPreviewSrcDoc(buildSrcDoc());
+      }, 300);
+    }
+    return () => clearTimeout(timeoutRef.current);
+  }, [html, css, js, wikitext, autoUpdate, applyFandomSkin]);
+
+  // Manual refresh
+  const refreshNow = () => setPreviewSrcDoc(buildSrcDoc());
+
+  // Download full HTML button
+  const downloadHtml = () => {
+    const blob = new Blob([buildSrcDoc()], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'fandom-preview.html';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Simple editor component
+  const Editor = ({ label, value, onChange, rows = 8 }) => (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between">
+        <strong>{label}</strong>
+        <span className="text-xs text-gray-500">{value.length} chars</span>
+      </div>
+      <textarea
+        className="w-full p-2 border rounded resize-y min-h-[6rem] bg-white text-sm font-mono"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        rows={rows}
+      />
+    </div>
+  );
+
+  return (
+    <div className="p-4 min-h-screen bg-gray-50">
+      <div className="max-w-[1300px] mx-auto">
+        <header className="flex items-center justify-between mb-4">
+          <h1 className="text-xl font-semibold">Fandom Wiki Live Editor</h1>
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={autoUpdate} onChange={() => setAutoUpdate(v=>!v)} /> Auto
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={applyFandomSkin} onChange={() => setApplyFandomSkin(v=>!v)} /> Fandom-skin
+            </label>
+            <button className="px-3 py-1 rounded bg-slate-800 text-white text-sm" onClick={refreshNow}>Refresh</button>
+            <button className="px-3 py-1 rounded border text-sm" onClick={downloadHtml}>Download HTML</button>
+          </div>
+        </header>
+
+        <main className="grid grid-cols-12 gap-4">
+          <section className="col-span-7 space-y-4">
+            <Editor label="Wikitext" value={wikitext} onChange={setWikitext} rows={8} />
+            <Editor label="HTML (page-level)" value={html} onChange={setHtml} rows={8} />
+            <Editor label="CSS (global)" value={css} onChange={setCss} rows={6} />
+            <Editor label="JavaScript (runs inside preview)" value={js} onChange={setJs} rows={6} />
+          </section>
+
+          <aside className="col-span-5">
+            <div className="border rounded overflow-hidden">
+              <div className="p-2 bg-white flex items-center justify-between">
+                <strong>Live Preview</strong>
+                <span className="text-xs text-gray-500">Sandboxed iframe</span>
+              </div>
+              <div className="w-full h-[70vh] bg-white">
+                <iframe
+                  title="preview"
+                  srcDoc={previewSrcDoc}
+                  style={{ width: '100%', height: '100%', border: 0 }}
+                  sandbox="allow-scripts allow-same-origin"
+                />
+              </div>
+            </div>
+
+            <div className="mt-3 text-sm text-gray-700">
+              <p><strong>Notes:</strong></p>
+              <ul className="list-disc ml-5">
+                <li>Wikitext conversion is a lightweight approximation (headings, bold, italics, links, lists, templates).</li>
+                <li>Links are routed to a placeholder fandom domain. Change the converter to match your wiki's domain if needed.</li>
+                <li>JS runs inside the iframe; it can't access your parent page. Use console in iframe to debug (open devtools on iframe origin if needed).</li>
+              </ul>
+            </div>
+          </aside>
+        </main>
+
+      </div>
+    </div>
+  );
+}
