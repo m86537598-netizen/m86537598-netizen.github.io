@@ -44,6 +44,27 @@
                 <button id="save-and-close-btn">Save & Close</button>
             </div>
         </header>
+
+        <div id="editor-toolbar">
+            <button class="toolbar-btn" data-command="bold" style="font-weight: bold;">B</button>
+            <button class="toolbar-btn" data-command="italic" style="font-style: italic;">I</button>
+            <button class="toolbar-btn" data-command="underline" style="text-decoration: underline;">U</button>
+            <button class="toolbar-btn" data-command="strikethrough" style="text-decoration: line-through;">S</button>
+            <button class="toolbar-btn" data-command="formatBlock" data-value="BLOCKQUOTE">Quote</button>
+            <button class="toolbar-btn" data-command="formatBlock" data-value="PRE">Code</button>
+            <button class="toolbar-btn" data-command="insertImage">Image</button>
+            
+            <select class="toolbar-select" data-command="fontName">
+                <option value="Arial">Arial</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Verdana">Verdana</option>
+                <option value="Courier New">Courier New</option>
+            </select>
+
+            <label for="highlight-color">Highlight:</label>
+            <input class="toolbar-input" type="color" id="highlight-color" data-command="backColor" title="Highlight Color">
+        </div>
         <div id="pages-container">
             </div>
         <button id="add-page-btn">+ Add New Page</button>
