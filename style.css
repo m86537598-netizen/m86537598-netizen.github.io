@@ -43,13 +43,17 @@ button:disabled {
 }
 
 input, select {
-    width: 100%;
     padding: 10px;
     margin-bottom: 15px;
     box-sizing: border-box; /* Important for padding to work nicely */
     border: 1px solid var(--grey-border);
     border-radius: 5px;
 }
+/* Default for text inputs */
+input[type="text"], input[type="url"] {
+    width: 100%;
+}
+
 
 header {
     display: flex;
@@ -136,6 +140,43 @@ header {
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
+/* === NEW: Toolbar Styles === */
+#editor-toolbar {
+    background: #fdfdfd;
+    border: 1px solid var(--grey-border);
+    border-radius: 5px;
+    padding: 10px;
+    margin: 20px 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+.toolbar-btn {
+    background: #fff;
+    color: var(--dark-color);
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    min-width: 40px; /* Uniform size */
+    font-size: 0.9rem;
+}
+.toolbar-btn:hover {
+    background: #f0f0f0;
+    border-color: #aaa;
+}
+.toolbar-select, .toolbar-input {
+    margin: 0; /* Override global margin */
+    padding: 5px;
+    border-radius: 3px;
+    font-size: 0.9rem;
+}
+input[type="color"].toolbar-input {
+    padding: 2px; /* Color input needs different padding */
+    min-height: 30px;
+}
+/* === END: Toolbar Styles === */
+
+
 .page-editor {
     background: var(--light-color);
     border: 1px solid var(--grey-border);
@@ -152,12 +193,29 @@ header {
     box-shadow: 0 0 5px rgba(0,123,255,0.3);
 }
 
-/* This styles images you paste into the editor */
-.page-editor img {
+/* Styles for content *inside* the editor */
+.page-editor img, #reader-content img {
     max-width: 100%;
     height: auto;
     border-radius: 5px;
 }
+.page-editor blockquote, #reader-content blockquote {
+    border-left: 4px solid #ccc;
+    margin: 1.5em 10px;
+    padding: 0.5em 10px;
+    color: #666;
+    font-style: italic;
+}
+.page-editor pre, #reader-content pre {
+    background: #f4f4f4;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 16px;
+    overflow: auto;
+    font-family: "Courier New", Courier, monospace;
+}
+/* === END: Content Styles === */
+
 
 #add-page-btn {
     display: block;
@@ -183,12 +241,11 @@ header {
 #reader-content {
     font-size: 1.2rem;
     line-height: 1.7;
+    /* This makes things like <b>, <i>, etc. work */
+    white-space: pre-wrap; 
+    word-wrap: break-word;
 }
-#reader-content img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 5px;
-}
+
 .reader-nav {
     display: flex;
     justify-content: space-between;
