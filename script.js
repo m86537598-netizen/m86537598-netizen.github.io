@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cover: cover,
             views: 0,
             theme: 'theme-light',
-            content: ["<h2>Chapter 1</h2><p>Start writing your story here... You can paste images!</p>"] // Start with one page
+            content: ["<h2>Chapter 1</h2><p>Start writing your story here... You can <b>bold</b>, <i>italicize</i>, and paste images!</p>"] // Start with one page
         };
 
         db.books.push(newBook);
@@ -208,6 +208,37 @@ document.addEventListener('DOMContentLoaded', () => {
             showView('dashboard-view');
         });
     });
+
+    // --- NEW: EDITOR TOOLBAR LOGIC ---
+    const editorToolbar = document.getElementById('editor-toolbar');
+
+    editorToolbar.addEventListener('click', (e) => {
+        // Only act on buttons
+        if (e.target.classList.contains('toolbar-btn')) {
+            e.preventDefault(); // Stop button from stealing focus
+            const button = e.target;
+            const command = button.dataset.command;
+            let value = button.dataset.value || null;
+
+            if (command === 'insertImage') {
+                value = prompt('Enter image URL:');
+                if (!value) return; // User canceled
+            }
+            
+            document.execCommand(command, false, value);
+        }
+    });
+
+    editorToolbar.addEventListener('change', (e) => {
+        // Act on selects and inputs
+        if (e.target.classList.contains('toolbar-select') || e.target.classList.contains('toolbar-input')) {
+            e.preventDefault();
+            const el = e.target;
+            const command = el.dataset.command;
+            document.execCommand(command, false, el.value);
+        }
+    });
+
 
     // --- INITIALIZATION ---
     renderDashboard(); // Show dashboard on page load
