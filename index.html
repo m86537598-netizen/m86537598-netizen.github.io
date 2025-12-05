@@ -3,640 +3,430 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StoryVerse - Creative Writing Platform</title>
-    <!-- Tailwind CSS for rapid styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&family=Lora:ital,wght@0,400;0,600;1,400&family=Merriweather:wght@300;700&family=Patrick+Hand&family=Space+Mono&display=swap" rel="stylesheet">
-    <!-- Font Awesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    <title>D3 & Goofy Chat</title>
     <style>
         :root {
-            --primary: #6366f1;
-            --bg-dark: #0f172a;
-            --bg-card: #1e293b;
+            --d3-color: #007bff; /* Blue */
+            --d3-text: #ffffff;
+            --goofy-color: #ffd700; /* Yellow */
+            --goofy-text: #000000;
+            --bg-color: #1e1e1e;
+            --input-bg: #2c2c2c;
+            --text-color: #e0e0e0;
         }
-        
+
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
-            color: #e2e8f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
         }
 
-        /* Scrollbar Styling */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0f172a; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #334155; 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #475569; 
+        /* --- LOGIN SCREEN --- */
+        #login-screen {
+            text-align: center;
+            padding: 2rem;
+            background: var(--input-bg);
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
 
-        /* Editor Styles */
-        #editor-content {
-            min-height: 300px;
-            outline: none;
-        }
-        
-        #editor-content img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 4px;
-            margin: 10px 0;
+        .login-btn {
+            display: block;
+            width: 200px;
+            padding: 15px;
+            margin: 10px auto;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2rem;
             cursor: pointer;
+            font-weight: bold;
             transition: transform 0.2s;
         }
+
+        .login-btn:hover { transform: scale(1.05); }
         
-        #editor-content blockquote {
-            border-left: 4px solid var(--primary);
-            padding-left: 1rem;
-            font-style: italic;
-            color: #94a3b8;
+        #btn-d3 { background-color: var(--d3-color); color: var(--d3-text); }
+        #btn-goofy { background-color: var(--goofy-color); color: var(--goofy-text); }
+
+        #password-modal {
+            display: none;
+            margin-top: 20px;
         }
 
-        /* Font Classes */
-        .font-inter { font-family: 'Inter', sans-serif; }
-        .font-lora { font-family: 'Lora', serif; }
-        .font-merriweather { font-family: 'Merriweather', serif; }
-        .font-hand { font-family: 'Patrick Hand', cursive; }
-        .font-mono { font-family: 'Space Mono', monospace; }
-        .font-cinzel { font-family: 'Cinzel', serif; }
-
-        /* Animations */
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        #pass-input {
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            width: 70%;
         }
 
-        .like-anim { animation: heartBeat 0.3s ease-in-out; }
-        @keyframes heartBeat {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.3); }
-            100% { transform: scale(1); }
+        /* --- CHAT SCREEN --- */
+        #chat-screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            max-width: 800px; /* Desktop constraint */
+            flex-direction: column;
+            background-color: #121212;
+            position: relative;
         }
+
+        /* Header */
+        header {
+            padding: 15px;
+            background-color: #252525;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+
+        .header-info { display: flex; align-items: center; gap: 10px; }
+        .pfp { width: 40px; height: 40px; border-radius: 50%; font-weight: bold; display: flex; justify-content: center; align-items: center; }
+        
+        .pfp-d3 { background-color: var(--d3-color); color: var(--d3-text); border: 2px solid white;}
+        .pfp-goofy { background-color: var(--goofy-color); color: var(--goofy-text); border: 2px solid black;}
+
+        #search-bar {
+            background: #333;
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            width: 40%;
+        }
+
+        /* Messages Area */
+        #messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            max-width: 70%;
+        }
+
+        .message-row.self { align-self: flex-end; flex-direction: row-reverse; }
+        .message-row.other { align-self: flex-start; }
+
+        .bubble {
+            padding: 10px 15px;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            word-wrap: break-word;
+            position: relative;
+        }
+
+        .bubble img, .bubble video {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-top: 5px;
+            display: block;
+        }
+
+        /* D3 Styling */
+        .msg-d3 .bubble { background-color: var(--d3-color); color: var(--d3-text); }
+        .msg-d3.self .bubble { border-bottom-right-radius: 2px; }
+        .msg-d3.other .bubble { border-bottom-left-radius: 2px; }
+
+        /* Goofy Styling */
+        .msg-goofy .bubble { background-color: var(--goofy-color); color: var(--goofy-text); }
+        .msg-goofy.self .bubble { border-bottom-right-radius: 2px; }
+        .msg-goofy.other .bubble { border-bottom-left-radius: 2px; }
+
+        /* Input Area */
+        #input-area {
+            padding: 15px;
+            background-color: #252525;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #message-input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 25px;
+            border: none;
+            background: #333;
+            color: white;
+            resize: none;
+            height: 20px;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+        .action-btn:hover { color: white; }
+
+        #send-btn {
+            color: var(--d3-color);
+            font-weight: bold;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e1e1e; }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
     </style>
 </head>
-<body class="h-screen flex overflow-hidden">
+<body>
 
-    <!-- SIDEBAR -->
-    <aside class="w-64 bg-slate-900 border-r border-slate-800 flex-shrink-0 flex flex-col hidden md:flex">
-        <div class="p-6">
-            <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400">
-                <i class="fa-solid fa-feather-pointed mr-2 text-white"></i>StoryVerse
-            </h1>
+    <div id="login-screen">
+        <h1>Who are you?</h1>
+        <button class="login-btn" id="btn-d3" onclick="promptLogin('d3')">I am D3</button>
+        <button class="login-btn" id="btn-goofy" onclick="promptLogin('goofy')">I am Goofy</button>
+
+        <div id="password-modal">
+            <h3 id="pass-prompt-text">Enter Password</h3>
+            <input type="password" id="pass-input" placeholder="Password...">
+            <br><br>
+            <button class="login-btn" style="width:100px; background:#444; color:white;" onclick="checkPassword()">Enter</button>
         </div>
-
-        <nav class="flex-1 px-4 space-y-2">
-            <button onclick="switchTab('trending')" id="nav-trending" class="w-full text-left px-4 py-3 rounded-lg bg-indigo-600 text-white transition hover:bg-indigo-700 flex items-center">
-                <i class="fa-solid fa-fire w-6"></i> Trending
-            </button>
-            <button onclick="switchTab('recommendations')" id="nav-recommendations" class="w-full text-left px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition flex items-center">
-                <i class="fa-solid fa-compass w-6"></i> For You
-            </button>
-            <button onclick="switchTab('myposts')" id="nav-myposts" class="w-full text-left px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition flex items-center">
-                <i class="fa-solid fa-book-open w-6"></i> My Posts
-            </button>
-        </nav>
-
-        <div class="p-4 border-t border-slate-800">
-            <button onclick="openEditor()" class="w-full bg-gradient-to-r from-pink-500 to-rose-500 text-white py-3 rounded-lg font-semibold hover:shadow-lg hover:shadow-rose-500/20 transition transform hover:-translate-y-0.5">
-                <i class="fa-solid fa-plus mr-2"></i> Create Post
-            </button>
-        </div>
-    </aside>
-
-    <!-- MOBILE HEADER (Visible only on small screens) -->
-    <div class="md:hidden fixed top-0 w-full bg-slate-900 z-50 p-4 flex justify-between items-center border-b border-slate-800">
-        <h1 class="text-xl font-bold text-white">StoryVerse</h1>
-        <button onclick="openEditor()" class="text-white bg-indigo-600 px-3 py-1 rounded"><i class="fa-solid fa-plus"></i></button>
+        <p style="color:red; display:none;" id="error-msg">Wrong Password!</p>
     </div>
 
-    <!-- MAIN CONTENT -->
-    <main class="flex-1 flex flex-col relative w-full h-full overflow-hidden bg-slate-950 pt-16 md:pt-0">
-        
-        <!-- Search & Filter Bar -->
-        <header class="h-16 border-b border-slate-800 bg-slate-900/50 backdrop-blur-md flex items-center px-6 justify-between z-10">
-            <div class="relative w-full max-w-md">
-                <i class="fa-solid fa-magnifying-glass absolute left-3 top-3.5 text-slate-500"></i>
-                <input type="text" id="searchInput" placeholder="Search titles, authors, or categories..." 
-                       class="w-full bg-slate-800 border border-slate-700 text-slate-200 pl-10 pr-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-                       onkeyup="handleSearch()">
+    <div id="chat-screen">
+        <header>
+            <div class="header-info">
+                <div id="header-pfp" class="pfp"></div>
+                <h3 id="header-name">Chat</h3>
             </div>
-            <div class="ml-4 flex items-center space-x-3">
-                <span class="text-slate-400 text-sm hidden sm:block">Welcome, <span class="text-indigo-400 font-semibold">Author</span></span>
-                <div class="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold cursor-pointer hover:bg-indigo-600">
-                    A
-                </div>
-            </div>
+            <input type="text" id="search-bar" placeholder="Search chat..." onkeyup="filterMessages()">
+            <button onclick="logout()" style="background:none; border:none; color:#ff4444; cursor:pointer;">Log Out</button>
         </header>
 
-        <!-- Feed Area -->
-        <div id="feed-container" class="flex-1 overflow-y-auto p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
-            <!-- Posts injected here via JS -->
-        </div>
-
-        <!-- Full Post Reader View (Hidden by default) -->
-        <div id="reader-view" class="absolute inset-0 bg-slate-950 z-20 transform translate-x-full transition-transform duration-300 overflow-y-auto">
-            <div class="max-w-3xl mx-auto min-h-screen bg-slate-900 border-x border-slate-800 shadow-2xl relative">
-                <button onclick="closeReader()" class="fixed top-4 right-4 md:right-[calc(50%-24rem)] z-30 bg-slate-800 text-white p-3 rounded-full hover:bg-rose-500 transition shadow-lg">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-                
-                <img id="reader-hero" src="" class="w-full h-64 object-cover">
-                
-                <div class="p-8 md:p-12">
-                    <div class="flex items-center space-x-2 mb-4">
-                        <span id="reader-category" class="px-3 py-1 bg-indigo-500/20 text-indigo-300 rounded-full text-xs font-bold uppercase tracking-wider">Category</span>
-                        <span id="reader-date" class="text-slate-500 text-sm"></span>
-                    </div>
-                    
-                    <h1 id="reader-title" class="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight"></h1>
-                    
-                    <div class="flex items-center justify-between border-b border-slate-800 pb-6 mb-6">
-                        <div class="flex items-center space-x-3">
-                            <div class="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-bold">
-                                <i class="fa-solid fa-user"></i>
-                            </div>
-                            <div>
-                                <p id="reader-author" class="text-slate-200 font-medium"></p>
-                                <p class="text-slate-500 text-xs">Author</p>
-                            </div>
-                        </div>
-                        <button id="reader-like-btn" onclick="toggleLikeCurrent()" class="text-slate-400 hover:text-rose-500 transition flex items-center space-x-2">
-                            <i class="fa-regular fa-heart text-2xl"></i>
-                            <span id="reader-likes" class="font-bold">0</span>
-                        </button>
-                    </div>
-
-                    <div id="reader-content" class="prose prose-invert prose-lg max-w-none text-slate-300">
-                        <!-- Content goes here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </main>
-
-    <!-- CREATE POST MODAL -->
-    <div id="editor-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 w-full max-w-5xl h-[90vh] rounded-xl shadow-2xl border border-slate-700 flex flex-col overflow-hidden">
-            
-            <!-- Editor Header -->
-            <div class="h-16 border-b border-slate-800 flex items-center justify-between px-6 bg-slate-900">
-                <h2 class="text-lg font-bold text-white">Create New Post</h2>
-                <div class="flex space-x-3">
-                    <button onclick="closeEditor()" class="text-slate-400 hover:text-white px-4 py-2">Cancel</button>
-                    <button onclick="publishPost()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition shadow-lg shadow-indigo-500/20">Publish</button>
-                </div>
+        <div id="messages-container">
             </div>
 
-            <div class="flex-1 flex overflow-hidden">
-                <!-- Settings Panel -->
-                <div class="w-72 bg-slate-800/50 border-r border-slate-700 p-6 overflow-y-auto space-y-6 hidden md:block">
-                    <div>
-                        <label class="block text-slate-400 text-xs font-bold uppercase mb-2">Thumbnail URL</label>
-                        <input type="text" id="post-thumbnail" placeholder="https://..." class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-white focus:border-indigo-500 focus:outline-none">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-slate-400 text-xs font-bold uppercase mb-2">Category</label>
-                        <select id="post-category" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-white focus:border-indigo-500 focus:outline-none">
-                            <option value="Fiction">Fiction</option>
-                            <option value="Tech">Technology</option>
-                            <option value="Life">Life & Style</option>
-                            <option value="Fantasy">Fantasy</option>
-                            <option value="Journal">Journal</option>
-                            <option value="Horror">Horror</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-slate-400 text-xs font-bold uppercase mb-2">Font Style</label>
-                        <select id="post-font" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-white focus:border-indigo-500 focus:outline-none" onchange="updateEditorFont()">
-                            <option value="font-inter">Modern (Inter)</option>
-                            <option value="font-lora">Elegant (Lora)</option>
-                            <option value="font-merriweather">Classic (Merriweather)</option>
-                            <option value="font-mono">Code (Space Mono)</option>
-                            <option value="font-hand">Handwritten (Patrick Hand)</option>
-                            <option value="font-cinzel">Cinematic (Cinzel)</option>
-                        </select>
-                    </div>
-
-                    <hr class="border-slate-700">
-                    
-                    <div>
-                         <label class="block text-slate-400 text-xs font-bold uppercase mb-2">Image Customization</label>
-                         <div class="text-xs text-slate-500 mb-2">Border Color</div>
-                         <input type="color" id="img-border-color" class="w-full h-8 cursor-pointer rounded bg-transparent" value="#ffffff">
-                         <div class="text-xs text-slate-500 mt-2 mb-1">Border Width</div>
-                         <input type="range" id="img-border-width" min="0" max="10" value="0" class="w-full">
-                    </div>
-                </div>
-
-                <!-- Main Editor Area -->
-                <div class="flex-1 flex flex-col bg-slate-900">
-                    <!-- Title Input -->
-                    <input type="text" id="post-title" placeholder="Enter your Title..." class="bg-transparent text-3xl md:text-4xl font-bold text-white px-8 py-6 border-b border-slate-800 focus:outline-none placeholder-slate-600">
-                    
-                    <!-- Toolbar -->
-                    <div class="px-6 py-3 border-b border-slate-800 flex flex-wrap gap-2 items-center bg-slate-800/30">
-                        <button onclick="formatDoc('bold')" class="p-2 text-slate-300 hover:text-white hover:bg-slate-700 rounded" title="Bold"><i class="fa-solid fa-bold"></i></button>
-                        <button onclick="formatDoc('italic')" class="p-2 text-slate-300 hover:text-white hover:bg-slate-700 rounded" title="Italic"><i class="fa-solid fa-italic"></i></button>
-                        <button onclick="formatDoc('formatBlock', 'blockquote')" class="p-2 text-slate-300 hover:text-white hover:bg-slate-700 rounded" title="Quote"><i class="fa-solid fa-quote-left"></i></button>
-                        <div class="w-px h-6 bg-slate-700 mx-1"></div>
-                        <button onclick="formatDoc('justifyLeft')" class="p-2 text-slate-300 hover:text-white hover:bg-slate-700 rounded"><i class="fa-solid fa-align-left"></i></button>
-                        <button onclick="formatDoc('justifyCenter')" class="p-2 text-slate-300 hover:text-white hover:bg-slate-700 rounded"><i class="fa-solid fa-align-center"></i></button>
-                        <div class="w-px h-6 bg-slate-700 mx-1"></div>
-                        <div class="relative group">
-                            <button class="p-2 text-slate-300 hover:text-white hover:bg-slate-700 rounded"><i class="fa-solid fa-palette"></i></button>
-                            <div class="absolute top-full left-0 mt-1 bg-slate-800 p-2 rounded shadow-xl hidden group-hover:flex gap-1 z-10 border border-slate-700">
-                                <button onclick="formatDoc('foreColor', '#ef4444')" class="w-6 h-6 rounded-full bg-red-500"></button>
-                                <button onclick="formatDoc('foreColor', '#3b82f6')" class="w-6 h-6 rounded-full bg-blue-500"></button>
-                                <button onclick="formatDoc('foreColor', '#10b981')" class="w-6 h-6 rounded-full bg-emerald-500"></button>
-                                <button onclick="formatDoc('foreColor', '#fbbf24')" class="w-6 h-6 rounded-full bg-amber-400"></button>
-                                <button onclick="formatDoc('foreColor', '#ffffff')" class="w-6 h-6 rounded-full bg-white border border-slate-600"></button>
-                            </div>
-                        </div>
-                        <button onclick="triggerImageUpload()" class="p-2 text-slate-300 hover:text-white hover:bg-slate-700 rounded" title="Add Image"><i class="fa-regular fa-image"></i></button>
-                        <input type="file" id="image-upload" class="hidden" accept="image/*" onchange="handleImageUpload(this)">
-                        
-                        <span class="text-xs text-slate-500 ml-auto">Tip: You can paste images directly!</span>
-                    </div>
-
-                    <!-- Editable Content -->
-                    <div id="editor-content" contenteditable="true" class="flex-1 p-8 text-lg text-slate-300 focus:outline-none overflow-y-auto font-inter">
-                        <p>Start writing your story here...</p>
-                    </div>
-                </div>
-            </div>
+        <div id="input-area">
+            <input type="file" id="media-upload" accept="image/*,video/*" style="display:none" onchange="handleFileUpload(this)">
+            <button class="action-btn" onclick="document.getElementById('media-upload').click()">📎</button>
+            <textarea id="message-input" placeholder="Type a message..." onkeypress="handleEnter(event)"></textarea>
+            <button class="action-btn" id="send-btn" onclick="sendMessage()">➤</button>
         </div>
     </div>
 
     <script>
-        // --- DATA MANAGEMENT ---
-        const MOCK_USER = "CreativeSoul";
-        let posts = JSON.parse(localStorage.getItem('storyverse_posts')) || generateMockData();
-        let currentTab = 'trending';
-        let currentPostId = null;
+        // --- CONFIGURATION ---
+        const USERS = {
+            'd3': { 
+                pass: 'ilovebirds*', 
+                colorClass: 'pfp-d3', 
+                bubbleClass: 'msg-d3',
+                displayName: 'D3'
+            },
+            'goofy': { 
+                pass: 'iamagoober0', 
+                colorClass: 'pfp-goofy', 
+                bubbleClass: 'msg-goofy',
+                displayName: 'Goofy'
+            }
+        };
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            renderFeed();
-            setupEditorPaste();
-        });
+        let currentUser = null;
+        let tryingToLoginAs = null;
 
-        function generateMockData() {
-            return [
-                {
-                    id: 1,
-                    title: "The Neon City at Midnight",
-                    author: "CyberPunk99",
-                    category: "Fiction",
-                    content: "<p>The rain never stopped in Sector 4. It washed away the grime, but never the sins...</p>",
-                    thumbnail: "https://images.unsplash.com/photo-1555680202-c86f0e12f086?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-                    likes: 420,
-                    date: "Oct 24, 2023",
-                    font: "font-mono"
-                },
-                {
-                    id: 2,
-                    title: "10 Habits for Better Coding",
-                    author: "DevGuru",
-                    category: "Tech",
-                    content: "<p><b>1. Consistency is key.</b> Writing code every day helps muscle memory...</p>",
-                    thumbnail: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-                    likes: 128,
-                    date: "Nov 01, 2023",
-                    font: "font-inter"
-                },
-                {
-                    id: 3,
-                    title: "The Lost Journal",
-                    author: "ExplorerJane",
-                    category: "Fantasy",
-                    content: "<p>I found it beneath the ancient roots of the Elder Tree. The leather was worn...</p>",
-                    thumbnail: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
-                    likes: 85,
-                    date: "Nov 03, 2023",
-                    font: "font-lora"
-                }
-            ];
+        // --- LOGIN LOGIC ---
+        function promptLogin(user) {
+            tryingToLoginAs = user;
+            document.getElementById('password-modal').style.display = 'block';
+            document.getElementById('btn-d3').style.display = 'none';
+            document.getElementById('btn-goofy').style.display = 'none';
+            document.getElementById('pass-prompt-text').innerText = `Enter Password for ${USERS[user].displayName}`;
+            document.getElementById('pass-input').focus();
         }
 
-        function savePosts() {
-            localStorage.setItem('storyverse_posts', JSON.stringify(posts));
-        }
-
-        // --- NAVIGATION & RENDERING ---
-        function switchTab(tab) {
-            currentTab = tab;
-            
-            // Update UI
-            document.querySelectorAll('nav button').forEach(btn => {
-                btn.classList.remove('bg-indigo-600', 'text-white');
-                btn.classList.add('text-slate-400', 'hover:bg-slate-800');
-            });
-            const activeBtn = document.getElementById(`nav-${tab}`);
-            activeBtn.classList.remove('text-slate-400', 'hover:bg-slate-800');
-            activeBtn.classList.add('bg-indigo-600', 'text-white');
-
-            renderFeed();
-        }
-
-        function renderFeed(filterQuery = "") {
-            const container = document.getElementById('feed-container');
-            container.innerHTML = '';
-
-            let displayPosts = [...posts];
-
-            // 1. Filter by Tab logic
-            if (currentTab === 'trending') {
-                displayPosts.sort((a, b) => b.likes - a.likes);
-            } else if (currentTab === 'recommendations') {
-                displayPosts = displayPosts.sort(() => Math.random() - 0.5); // Random shuffle
-            } else if (currentTab === 'myposts') {
-                displayPosts = displayPosts.filter(p => p.author === MOCK_USER);
-            }
-
-            // 2. Filter by Search
-            if (filterQuery) {
-                const q = filterQuery.toLowerCase();
-                displayPosts = displayPosts.filter(p => 
-                    p.title.toLowerCase().includes(q) || 
-                    p.category.toLowerCase().includes(q) ||
-                    p.author.toLowerCase().includes(q)
-                );
-            }
-
-            if (displayPosts.length === 0) {
-                container.innerHTML = `
-                    <div class="col-span-full text-center py-20">
-                        <i class="fa-regular fa-folder-open text-6xl text-slate-700 mb-4"></i>
-                        <p class="text-slate-500 text-xl">No stories found here.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            displayPosts.forEach(post => {
-                const card = document.createElement('div');
-                card.className = "bg-card rounded-xl overflow-hidden border border-slate-800 hover:border-indigo-500/50 transition duration-300 transform hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/10 flex flex-col h-full fade-in";
+        function checkPassword() {
+            const input = document.getElementById('pass-input').value;
+            if (input === USERS[tryingToLoginAs].pass) {
+                // Success
+                currentUser = tryingToLoginAs;
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('chat-screen').style.display = 'flex';
+                document.getElementById('error-msg').style.display = 'none';
                 
-                // Fallback image if empty
-                const thumb = post.thumbnail || 'https://via.placeholder.com/400x200/1e293b/475569?text=StoryVerse';
+                // Setup Header
+                const pfp = document.getElementById('header-pfp');
+                pfp.className = `pfp ${USERS[currentUser].colorClass}`;
+                pfp.innerText = currentUser[0].toUpperCase();
+                document.getElementById('header-name').innerText = `Logged in as ${USERS[currentUser].displayName}`;
                 
-                card.innerHTML = `
-                    <div class="relative h-48 overflow-hidden cursor-pointer" onclick="openPost(${post.id})">
-                        <img src="${thumb}" class="w-full h-full object-cover transition duration-500 hover:scale-105" alt="${post.title}">
-                        <div class="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
-                            ${post.category}
-                        </div>
-                    </div>
-                    <div class="p-5 flex-1 flex flex-col">
-                        <div class="flex items-center space-x-2 text-xs text-slate-500 mb-2">
-                            <span><i class="fa-regular fa-user mr-1"></i>${post.author}</span>
-                            <span>•</span>
-                            <span>${post.date}</span>
-                        </div>
-                        <h3 class="text-xl font-bold text-white mb-2 leading-tight cursor-pointer hover:text-indigo-400 transition" onclick="openPost(${post.id})">
-                            ${post.title}
-                        </h3>
-                        <div class="flex-1">
-                            <p class="text-slate-400 text-sm line-clamp-3">${stripHtml(post.content)}</p>
-                        </div>
-                        <div class="mt-4 pt-4 border-t border-slate-800 flex justify-between items-center">
-                            <button onclick="toggleLike(${post.id}, this)" class="text-slate-400 hover:text-rose-500 flex items-center space-x-1 group transition">
-                                <i class="${post.isLiked ? 'fa-solid text-rose-500' : 'fa-regular'} fa-heart group-hover:scale-110 transition-transform"></i>
-                                <span class="${post.isLiked ? 'text-rose-500' : ''}">${post.likes}</span>
-                            </button>
-                            <button onclick="openPost(${post.id})" class="text-indigo-400 text-sm font-semibold hover:text-indigo-300">Read More &rarr;</button>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(card);
+                loadMessages();
+            } else {
+                document.getElementById('error-msg').style.display = 'block';
+            }
+            document.getElementById('pass-input').value = "";
+        }
+
+        function logout() {
+            location.reload();
+        }
+
+        // --- CHAT LOGIC ---
+        
+        // Load messages from LocalStorage
+        function getHistory() {
+            return JSON.parse(localStorage.getItem('chatHistory')) || [];
+        }
+
+        function loadMessages() {
+            const container = document.getElementById('messages-container');
+            container.innerHTML = ''; // clear current
+            const history = getHistory();
+
+            history.forEach(msg => {
+                renderMessage(msg);
             });
+            scrollToBottom();
         }
 
-        // --- POST VIEWING ---
-        function openPost(id) {
-            const post = posts.find(p => p.id === id);
-            if (!post) return;
+        function renderMessage(msg) {
+            const container = document.getElementById('messages-container');
+            const isSelf = msg.sender === currentUser;
+            const userConfig = USERS[msg.sender];
 
-            currentPostId = id;
-            const reader = document.getElementById('reader-view');
+            const row = document.createElement('div');
+            row.className = `message-row ${userConfig.bubbleClass} ${isSelf ? 'self' : 'other'}`;
+
+            // PFP
+            const pfp = document.createElement('div');
+            pfp.className = `pfp ${userConfig.colorClass}`;
+            pfp.innerText = msg.sender[0].toUpperCase();
+            pfp.style.width = '30px'; 
+            pfp.style.height = '30px';
+            pfp.style.fontSize = '0.8rem';
+
+            // Bubble
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
             
-            // Populate Reader
-            document.getElementById('reader-hero').src = post.thumbnail || 'https://via.placeholder.com/800x400/1e293b/475569?text=No+Image';
-            document.getElementById('reader-title').innerText = post.title;
-            document.getElementById('reader-author').innerText = post.author;
-            document.getElementById('reader-date').innerText = post.date;
-            document.getElementById('reader-category').innerText = post.category;
-            document.getElementById('reader-likes').innerText = post.likes;
-            
-            // Apply Font Class
-            const contentDiv = document.getElementById('reader-content');
-            contentDiv.innerHTML = post.content;
-            contentDiv.className = `prose prose-invert prose-lg max-w-none text-slate-300 ${post.font || 'font-inter'}`;
-            
-            // Handle Like Button State in Reader
-            const heartIcon = document.querySelector('#reader-like-btn i');
-            const likeCount = document.getElementById('reader-likes');
-            if (post.isLiked) {
-                heartIcon.classList.remove('fa-regular');
-                heartIcon.classList.add('fa-solid', 'text-rose-500');
-                likeCount.classList.add('text-rose-500');
+            let contentHtml = '';
+            if (msg.type === 'text') {
+                contentHtml = `<span class="msg-text">${escapeHtml(msg.content)}</span>`;
+            } else if (msg.type === 'image') {
+                contentHtml = `<img src="${msg.content}" alt="image">`;
+            } else if (msg.type === 'video') {
+                contentHtml = `<video src="${msg.content}" controls></video>`;
+            }
+
+            bubble.innerHTML = contentHtml;
+
+            // Assemble
+            if (isSelf) {
+                row.appendChild(bubble);
+                row.appendChild(pfp);
             } else {
-                heartIcon.classList.add('fa-regular');
-                heartIcon.classList.remove('fa-solid', 'text-rose-500');
-                likeCount.classList.remove('text-rose-500');
+                row.appendChild(pfp);
+                row.appendChild(bubble);
             }
 
-            // Animate In
-            reader.classList.remove('translate-x-full');
+            container.appendChild(row);
         }
 
-        function closeReader() {
-            document.getElementById('reader-view').classList.add('translate-x-full');
-            currentPostId = null;
+        function sendMessage(type = 'text', content = null) {
+            const input = document.getElementById('message-input');
+            const finalContent = content || input.value;
+
+            if (!finalContent.trim() && type === 'text') return;
+
+            const msgObj = {
+                sender: currentUser,
+                type: type,
+                content: finalContent,
+                timestamp: Date.now()
+            };
+
+            // Save to LocalStorage
+            const history = getHistory();
+            history.push(msgObj);
+            localStorage.setItem('chatHistory', JSON.stringify(history));
+
+            // Render
+            renderMessage(msgObj);
+            scrollToBottom();
+
+            if (type === 'text') input.value = '';
         }
 
-        // --- EDITOR LOGIC ---
-        function openEditor() {
-            document.getElementById('editor-modal').classList.remove('hidden');
-        }
-
-        function closeEditor() {
-            if(confirm("Discard unsaved changes?")) {
-                document.getElementById('editor-modal').classList.add('hidden');
-                // Reset editor
-                document.getElementById('post-title').value = '';
-                document.getElementById('editor-content').innerHTML = '<p>Start writing...</p>';
-                document.getElementById('post-thumbnail').value = '';
-            }
-        }
-
-        function formatDoc(cmd, value = null) {
-            if (value) {
-                document.execCommand(cmd, false, value);
-            } else {
-                document.execCommand(cmd);
-            }
-            document.getElementById('editor-content').focus();
-        }
-
-        function updateEditorFont() {
-            const fontClass = document.getElementById('post-font').value;
-            const editor = document.getElementById('editor-content');
-            // Remove existing font classes
-            editor.classList.remove('font-inter', 'font-lora', 'font-merriweather', 'font-mono', 'font-hand', 'font-cinzel');
-            editor.classList.add(fontClass);
-        }
-
-        function triggerImageUpload() {
-            document.getElementById('image-upload').click();
-        }
-
-        function handleImageUpload(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    insertImageAtCursor(e.target.result);
-                }
-                reader.readAsDataURL(input.files[0]);
+        function handleEnter(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
             }
         }
 
-        // Paste Image Handler
-        function setupEditorPaste() {
-            const editor = document.getElementById('editor-content');
-            editor.addEventListener('paste', (e) => {
-                const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-                for (let index in items) {
-                    const item = items[index];
-                    if (item.kind === 'file') {
-                        e.preventDefault();
-                        const blob = item.getAsFile();
-                        const reader = new FileReader();
-                        reader.onload = (event) => {
-                            insertImageAtCursor(event.target.result);
-                        };
-                        reader.readAsDataURL(blob);
+        function scrollToBottom() {
+            const container = document.getElementById('messages-container');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // --- MEDIA HANDLING ---
+        function handleFileUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const type = file.type.startsWith('video') ? 'video' : 'image';
+                sendMessage(type, e.target.result);
+            };
+            reader.readAsDataURL(file); // Convert to Base64
+            input.value = ''; // Reset input
+        }
+
+        // --- SEARCH ---
+        function filterMessages() {
+            const term = document.getElementById('search-bar').value.toLowerCase();
+            const bubbles = document.querySelectorAll('.message-row');
+
+            bubbles.forEach(row => {
+                const textSpan = row.querySelector('.msg-text');
+                if (textSpan) {
+                    const text = textSpan.innerText.toLowerCase();
+                    if (text.includes(term)) {
+                        row.style.display = 'flex';
+                    } else {
+                        row.style.display = 'none';
                     }
                 }
             });
         }
 
-        function insertImageAtCursor(src) {
-            const borderColor = document.getElementById('img-border-color').value;
-            const borderWidth = document.getElementById('img-border-width').value;
-            
-            const imgHtml = `<img src="${src}" style="border: ${borderWidth}px solid ${borderColor};">`;
-            document.execCommand('insertHTML', false, imgHtml);
-        }
-
-        function publishPost() {
-            const title = document.getElementById('post-title').value;
-            const content = document.getElementById('editor-content').innerHTML;
-            const category = document.getElementById('post-category').value;
-            const thumbnail = document.getElementById('post-thumbnail').value;
-            const font = document.getElementById('post-font').value;
-
-            if (!title.trim()) {
-                alert("Please enter a title!");
-                return;
-            }
-
-            const newPost = {
-                id: Date.now(),
-                title: title,
-                author: MOCK_USER,
-                category: category,
-                content: content,
-                thumbnail: thumbnail,
-                likes: 0,
-                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric'}),
-                font: font,
-                isLiked: false
-            };
-
-            posts.unshift(newPost); // Add to top
-            savePosts();
-            
-            // Close editor without confirmation
-            document.getElementById('editor-modal').classList.add('hidden');
-            // Reset fields
-            document.getElementById('post-title').value = '';
-            document.getElementById('editor-content').innerHTML = '<p>Start writing...</p>';
-            document.getElementById('post-thumbnail').value = '';
-
-            // Switch to My Posts to see it
-            switchTab('myposts');
-        }
-
         // --- UTILS ---
-        function handleSearch() {
-            const query = document.getElementById('searchInput').value;
-            renderFeed(query);
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
         }
-
-        function toggleLike(id, btnElement) {
-            const post = posts.find(p => p.id === id);
-            if (post) {
-                post.isLiked = !post.isLiked;
-                post.likes += post.isLiked ? 1 : -1;
-                savePosts();
-                
-                // Animate UI
-                const icon = btnElement.querySelector('i');
-                const count = btnElement.querySelector('span');
-                
-                if (post.isLiked) {
-                    icon.classList.remove('fa-regular');
-                    icon.classList.add('fa-solid', 'text-rose-500', 'like-anim');
-                    count.classList.add('text-rose-500');
-                } else {
-                    icon.classList.add('fa-regular');
-                    icon.classList.remove('fa-solid', 'text-rose-500', 'like-anim');
-                    count.classList.remove('text-rose-500');
-                }
-                count.innerText = post.likes;
+        
+        // Storage Listener (Updates chat if opened in another tab)
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'chatHistory') {
+                loadMessages();
             }
-        }
+        });
 
-        function toggleLikeCurrent() {
-            if (!currentPostId) return;
-            const btn = document.getElementById('reader-like-btn'); // This is a dummy trigger
-            toggleLike(currentPostId, btn);
-            // Manually update the reader view count/style again because toggleLike updates the card in background
-            const post = posts.find(p => p.id === currentPostId);
-            const icon = btn.querySelector('i');
-            const count = document.getElementById('reader-likes');
-            
-            count.innerText = post.likes;
-             if (post.isLiked) {
-                icon.classList.remove('fa-regular');
-                icon.classList.add('fa-solid', 'text-rose-500');
-                count.classList.add('text-rose-500');
-            } else {
-                icon.classList.add('fa-regular');
-                icon.classList.remove('fa-solid', 'text-rose-500');
-                count.classList.remove('text-rose-500');
-            }
-        }
-
-        function stripHtml(html) {
-           let tmp = document.createElement("DIV");
-           tmp.innerHTML = html;
-           return tmp.textContent || tmp.innerText || "";
-        }
     </script>
 </body>
 </html>
