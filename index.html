@@ -221,24 +221,22 @@
 <div class="container">
     <h1>DandyFinder</h1>
     <div class="json-note">
-        JSON Data is loaded from the HTML script tags below. You can edit the code to change the lists.
+        <b>NOTE:</b> Ensure your images (e.g., Boxten.png) are in the same folder as this HTML file.
     </div>
 
     <script id="json-toons" type="application/json">
     [
-        { "name": "Boxten", "image": "https://static.wikia.nocookie.net/dandys-world-robloxhorror/images/b/b3/Boxten_Render.png/revision/latest/scale-to-width-down/268?cb=20240705190122", "type": "normal" },
-        { "name": "Poppy", "image": "https://static.wikia.nocookie.net/dandys-world-robloxhorror/images/0/0a/Poppy_Render.png/revision/latest/scale-to-width-down/268?cb=20240807221617", "type": "normal" },
-        { "name": "Tisha", "image": "file:///C:/Users/jeylo/Downloads/ifart.webp", "type": "normal" },
-        { "name": "Flutter", "image": "", "type": "normal" },
-        { "name": "Sprout", "image": "", "type": "main" },
-        { "name": "Ribecca", "image": "", "type": "halloween" }
+        { "name": "Boxten", "image": "Boxten.png", "type": "main" },
+        { "name": "Poppy", "image": "Poppy.png", "type": "normal" },
+        { "name": "Tisha", "image": "ifart.webp", "type": "normal" },
+        { "name": "Sprout", "image": "", "type": "main" }
     ]
     </script>
 
     <script id="json-trinkets" type="application/json">
     [
-        { "name": "Pink Bow", "image": "", "type": "normal" },
-        { "name": "Dandy Plush", "image": "", "type": "lethal" }
+        { "name": "Pink Bow", "image": "PinkBow.png", "type": "normal" },
+        { "name": "Dandy Plush", "image": "DandyPlush.png", "type": "main" }
     ]
     </script>
     
@@ -321,12 +319,13 @@
             // Apply border class based on JSON type
             btn.className = `game-btn border-${item.type}`;
             
-            // Handle missing images with a default gray box URL
-            const imgUrl = item.image && item.image.length > 5 ? item.image : "https://via.placeholder.com/150/333333/ffffff?text=?";
+            // Logic change: Use local filename directly. 
+            // Fallback to a placeholder URL if the name is empty.
+            const imgUrl = item.image ? item.image : "https://via.placeholder.com/150/333333/ffffff?text=?";
 
             btn.innerHTML = `
                 <div class="game-btn-inner">
-                    <img src="${imgUrl}" alt="${item.name}">
+                    <img src="${imgUrl}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/150?text=File+Not+Found';">
                     <span>${item.name}</span>
                 </div>
             `;
@@ -371,12 +370,12 @@
         // Toon Image Logic
         let toonImgHtml = '';
         if(selectedToon) {
-            const imgUrl = selectedToon.image && selectedToon.image.length > 5 ? selectedToon.image : "https://via.placeholder.com/150/333333/ffffff?text=?";
+            const imgUrl = selectedToon.image ? selectedToon.image : "https://via.placeholder.com/150/333333/ffffff?text=?";
             // We reuse the button styling for the display
             toonImgHtml = `
             <div class="game-btn border-${selectedToon.type}" style="cursor:default; transform:none; width:80px; height:100px;">
                 <div class="game-btn-inner">
-                    <img src="${imgUrl}">
+                    <img src="${imgUrl}" onerror="this.src='https://via.placeholder.com/150?text=File+Not+Found';">
                 </div>
             </div>`;
         }
