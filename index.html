@@ -3,16 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D3 & Goofy Chat</title>
+    <title>DandyFinder - Stats Tracker</title>
     <style>
         :root {
-            --d3-color: #007bff; /* Blue */
-            --d3-text: #ffffff;
-            --goofy-color: #ffd700; /* Yellow */
-            --goofy-text: #000000;
-            --bg-color: #1e1e1e;
-            --input-bg: #2c2c2c;
-            --text-color: #e0e0e0;
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-color: #f0f0f0;
+            --accent: #ff6b6b;
+            --border-radius: 12px;
         }
 
         body {
@@ -20,413 +18,499 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }
-
-        /* --- LOGIN SCREEN --- */
-        #login-screen {
-            text-align: center;
-            padding: 2rem;
-            background: var(--input-bg);
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-        }
-
-        .login-btn {
-            display: block;
-            width: 200px;
-            padding: 15px;
-            margin: 10px auto;
-            border: none;
-            border-radius: 50px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            font-weight: bold;
-            transition: transform 0.2s;
-        }
-
-        .login-btn:hover { transform: scale(1.05); }
-        
-        #btn-d3 { background-color: var(--d3-color); color: var(--d3-text); }
-        #btn-goofy { background-color: var(--goofy-color); color: var(--goofy-text); }
-
-        #password-modal {
-            display: none;
-            margin-top: 20px;
-        }
-
-        #pass-input {
-            padding: 10px;
-            border-radius: 5px;
-            border: none;
-            width: 70%;
-        }
-
-        /* --- CHAT SCREEN --- */
-        #chat-screen {
-            display: none;
-            width: 100%;
-            height: 100%;
-            max-width: 800px; /* Desktop constraint */
-            flex-direction: column;
-            background-color: #121212;
-            position: relative;
-        }
-
-        /* Header */
-        header {
-            padding: 15px;
-            background-color: #252525;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #333;
-        }
-
-        .header-info { display: flex; align-items: center; gap: 10px; }
-        .pfp { width: 40px; height: 40px; border-radius: 50%; font-weight: bold; display: flex; justify-content: center; align-items: center; }
-        
-        .pfp-d3 { background-color: var(--d3-color); color: var(--d3-text); border: 2px solid white;}
-        .pfp-goofy { background-color: var(--goofy-color); color: var(--goofy-text); border: 2px solid black;}
-
-        #search-bar {
-            background: #333;
-            border: none;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            width: 40%;
-        }
-
-        /* Messages Area */
-        #messages-container {
-            flex: 1;
-            overflow-y: auto;
             padding: 20px;
+        }
+
+        h1, h2, h3 { text-align: center; margin-bottom: 20px; }
+        h1 { color: var(--accent); font-size: 3rem; text-transform: uppercase; letter-spacing: 2px; }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* --- Input Form Styling --- */
+        .tracker-form {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 15px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; color: #ccc;}
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            background: #3d3d3d;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 6px;
+            box-sizing: border-box; /* Fix padding issues */
+        }
+
+        /* --- The Selection Grids (Toons/Trinkets) --- */
+        .selection-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            background: #222;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .item-btn {
+            width: 80px;
+            height: 100px;
+            background: #333;
+            border: none;
+            cursor: pointer;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-        }
-
-        .message-row {
-            display: flex;
-            align-items: flex-end;
-            gap: 10px;
-            max-width: 70%;
-        }
-
-        .message-row.self { align-self: flex-end; flex-direction: row-reverse; }
-        .message-row.other { align-self: flex-start; }
-
-        .bubble {
-            padding: 10px 15px;
-            border-radius: 18px;
-            font-size: 0.95rem;
-            word-wrap: break-word;
-            position: relative;
-        }
-
-        .bubble img, .bubble video {
-            max-width: 100%;
-            border-radius: 10px;
-            margin-top: 5px;
-            display: block;
-        }
-
-        /* D3 Styling */
-        .msg-d3 .bubble { background-color: var(--d3-color); color: var(--d3-text); }
-        .msg-d3.self .bubble { border-bottom-right-radius: 2px; }
-        .msg-d3.other .bubble { border-bottom-left-radius: 2px; }
-
-        /* Goofy Styling */
-        .msg-goofy .bubble { background-color: var(--goofy-color); color: var(--goofy-text); }
-        .msg-goofy.self .bubble { border-bottom-right-radius: 2px; }
-        .msg-goofy.other .bubble { border-bottom-left-radius: 2px; }
-
-        /* Input Area */
-        #input-area {
-            padding: 15px;
-            background-color: #252525;
-            display: flex;
-            gap: 10px;
             align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: transform 0.2s, filter 0.2s;
+            position: relative;
+            overflow: hidden;
+            padding: 5px;
         }
 
-        #message-input {
-            flex: 1;
-            padding: 12px;
-            border-radius: 25px;
-            border: none;
-            background: #333;
+        .item-btn:hover { transform: scale(1.1); z-index: 10; }
+        .item-btn.selected { transform: scale(1.1); box-shadow: 0 0 10px white; }
+        
+        .item-btn img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        .item-btn span {
+            font-size: 0.7rem;
+            text-align: center;
+            line-height: 1.1;
             color: white;
-            resize: none;
-            height: 20px;
         }
 
-        .action-btn {
-            background: none;
+        /* --- BORDER TYPES LOGIC --- */
+        /* Base border setup for the image inside the button */
+        .item-btn img { border: 3px solid transparent; }
+
+        /* Normal */
+        .type-normal img { border-color: #777; }
+
+        /* Lethal (Red) */
+        .type-lethal img { border-color: #ff0000; box-shadow: 0 0 5px #ff0000; }
+
+        /* Main (Rainbow) */
+        .type-main { 
+            background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet);
+            padding: 3px !important; 
+        }
+        .type-main .inner-content { background: #333; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+        /* Halloween (Orange) */
+        .type-halloween img { border-color: #ff8c00; box-shadow: 0 0 5px #ff8c00; }
+
+        /* Halloween Main (Rainbow + Orange) */
+        .type-halloween-main {
+            background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet);
+            padding: 3px !important;
+        }
+        .type-halloween-main img { border: 2px solid #ff8c00; }
+
+        /* Christmas (White/Red Gradient) */
+        .type-christmas img { 
+            border-image: repeating-linear-gradient(45deg, red, red 5px, white 5px, white 10px) 1;
+        }
+
+        /* Christmas Main (Rainbow + Christmas) */
+        .type-christmas-main {
+             background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet);
+             padding: 3px !important;
+        }
+        .type-christmas-main img {
+            border: 2px solid white;
+            outline: 2px solid red; /* Simulate stripe effect simply */
+        }
+
+        /* Easter (Green) */
+        .type-easter img { border-color: #32cd32; }
+
+        /* Easter Main (Green + Rainbow) */
+        .type-easter-main {
+            background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet);
+            padding: 3px !important;
+        }
+        .type-easter-main img { border: 2px solid #32cd32; }
+
+
+        /* --- Team Section --- */
+        #team-container { margin-top: 10px; }
+        .teammate-entry {
+            background: #333;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--accent);
+            border-radius: 4px;
+        }
+        .btn-action {
+            background: var(--accent);
+            color: white;
             border: none;
-            color: #888;
+            padding: 10px 20px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 1.2rem;
-        }
-        .action-btn:hover { color: white; }
-
-        #send-btn {
-            color: var(--d3-color);
             font-weight: bold;
+            margin-top: 10px;
         }
+        .btn-action:hover { filter: brightness(1.1); }
+        
+        .hidden { display: none; }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1e1e1e; }
-        ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+        /* --- Result Card Styling --- */
+        #results-area { margin-top: 50px; }
+        .goal-card {
+            background: #252525;
+            border: 2px solid #444;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .goal-header { border-bottom: 1px solid #555; padding-bottom: 10px; margin-bottom: 10px; display: flex; justify-content: space-between;}
+        .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 0.9rem; }
+        .stat-item { background: #333; padding: 5px 10px; border-radius: 4px; }
+        .stat-label { color: #aaa; font-size: 0.8rem; }
+        
+        .toon-display { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+        .toon-display img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+
+        .screenshot-gallery { display: flex; gap: 10px; overflow-x: auto; margin-top: 10px; }
+        .screenshot-gallery img { max-height: 100px; border-radius: 5px; border: 1px solid #555; }
     </style>
 </head>
 <body>
 
-    <div id="login-screen">
-        <h1>Who are you?</h1>
-        <button class="login-btn" id="btn-d3" onclick="promptLogin('d3')">I am D3</button>
-        <button class="login-btn" id="btn-goofy" onclick="promptLogin('goofy')">I am Goofy</button>
+<div class="container">
+    <h1>DandyFinder</h1>
+    <h3>Run & Stats Tracker</h3>
 
-        <div id="password-modal">
-            <h3 id="pass-prompt-text">Enter Password</h3>
-            <input type="password" id="pass-input" placeholder="Password...">
-            <br><br>
-            <button class="login-btn" style="width:100px; background:#444; color:white;" onclick="checkPassword()">Enter</button>
-        </div>
-        <p style="color:red; display:none;" id="error-msg">Wrong Password!</p>
-    </div>
-
-    <div id="chat-screen">
-        <header>
-            <div class="header-info">
-                <div id="header-pfp" class="pfp"></div>
-                <h3 id="header-name">Chat</h3>
-            </div>
-            <input type="text" id="search-bar" placeholder="Search chat..." onkeyup="filterMessages()">
-            <button onclick="logout()" style="background:none; border:none; color:#ff4444; cursor:pointer;">Log Out</button>
-        </header>
-
-        <div id="messages-container">
-            </div>
-
-        <div id="input-area">
-            <input type="file" id="media-upload" accept="image/*,video/*" style="display:none" onchange="handleFileUpload(this)">
-            <button class="action-btn" onclick="document.getElementById('media-upload').click()">📎</button>
-            <textarea id="message-input" placeholder="Type a message..." onkeypress="handleEnter(event)"></textarea>
-            <button class="action-btn" id="send-btn" onclick="sendMessage()">➤</button>
-        </div>
-    </div>
-
-    <script>
-        // --- CONFIGURATION ---
-        const USERS = {
-            'd3': { 
-                pass: 'ilovebirds*', 
-                colorClass: 'pfp-d3', 
-                bubbleClass: 'msg-d3',
-                displayName: 'D3'
-            },
-            'goofy': { 
-                pass: 'iamagoober0', 
-                colorClass: 'pfp-goofy', 
-                bubbleClass: 'msg-goofy',
-                displayName: 'Goofy'
-            }
-        };
-
-        let currentUser = null;
-        let tryingToLoginAs = null;
-
-        // --- LOGIN LOGIC ---
-        function promptLogin(user) {
-            tryingToLoginAs = user;
-            document.getElementById('password-modal').style.display = 'block';
-            document.getElementById('btn-d3').style.display = 'none';
-            document.getElementById('btn-goofy').style.display = 'none';
-            document.getElementById('pass-prompt-text').innerText = `Enter Password for ${USERS[user].displayName}`;
-            document.getElementById('pass-input').focus();
-        }
-
-        function checkPassword() {
-            const input = document.getElementById('pass-input').value;
-            if (input === USERS[tryingToLoginAs].pass) {
-                // Success
-                currentUser = tryingToLoginAs;
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('chat-screen').style.display = 'flex';
-                document.getElementById('error-msg').style.display = 'none';
-                
-                // Setup Header
-                const pfp = document.getElementById('header-pfp');
-                pfp.className = `pfp ${USERS[currentUser].colorClass}`;
-                pfp.innerText = currentUser[0].toUpperCase();
-                document.getElementById('header-name').innerText = `Logged in as ${USERS[currentUser].displayName}`;
-                
-                loadMessages();
-            } else {
-                document.getElementById('error-msg').style.display = 'block';
-            }
-            document.getElementById('pass-input').value = "";
-        }
-
-        function logout() {
-            location.reload();
-        }
-
-        // --- CHAT LOGIC ---
+    <form class="tracker-form" id="runForm">
         
-        // Load messages from LocalStorage
-        function getHistory() {
-            return JSON.parse(localStorage.getItem('chatHistory')) || [];
-        }
+        <div class="form-section">
+            <h2>Run Details</h2>
+            <div class="form-grid">
+                <div>
+                    <label>Username</label>
+                    <input type="text" id="username" placeholder="RobloxUser123" required>
+                </div>
+                <div>
+                    <label>Display Name (Optional)</label>
+                    <input type="text" id="displayName" placeholder="Cool Player">
+                </div>
+                <div>
+                    <label>Date/Time</label>
+                    <input type="datetime-local" id="runDate" required>
+                </div>
+                <div>
+                    <label>Run Type</label>
+                    <select id="runType">
+                        <option value="Standard">Standard</option>
+                        <option value="Challenge">Challenge</option>
+                        <option value="Speedrun">Speedrun</option>
+                    </select>
+                </div>
+            </div>
+        </div>
 
-        function loadMessages() {
-            const container = document.getElementById('messages-container');
-            container.innerHTML = ''; // clear current
-            const history = getHistory();
+        <div class="form-section">
+            <h2>Performance</h2>
+            <div class="form-grid">
+                <div><label>Floor Reached</label><input type="number" id="floorReached" required></div>
+                <div><label>Highest Floor (PB)</label><input type="number" id="highestFloor"></div>
+                <div><label>Twisted Died To</label><input type="text" id="diedTo" placeholder="e.g. Twisted Boxten"></div>
+                <div><label>Ichor Received</label><input type="number" id="ichorReceived"></div>
+                <div><label>Dandy Items Purchased</label><input type="number" id="dandyItemsRun"></div>
+            </div>
+            <div>
+                <label>Events Experienced</label>
+                <input type="text" id="eventsExp" placeholder="e.g. Blackout, Panic">
+            </div>
+        </div>
 
-            history.forEach(msg => {
-                renderMessage(msg);
-            });
-            scrollToBottom();
-        }
-
-        function renderMessage(msg) {
-            const container = document.getElementById('messages-container');
-            const isSelf = msg.sender === currentUser;
-            const userConfig = USERS[msg.sender];
-
-            const row = document.createElement('div');
-            row.className = `message-row ${userConfig.bubbleClass} ${isSelf ? 'self' : 'other'}`;
-
-            // PFP
-            const pfp = document.createElement('div');
-            pfp.className = `pfp ${userConfig.colorClass}`;
-            pfp.innerText = msg.sender[0].toUpperCase();
-            pfp.style.width = '30px'; 
-            pfp.style.height = '30px';
-            pfp.style.fontSize = '0.8rem';
-
-            // Bubble
-            const bubble = document.createElement('div');
-            bubble.className = 'bubble';
+        <div class="form-section">
+            <h2>Your Loadout</h2>
+            <p style="font-size:0.8rem; color:#aaa;">Click to select.</p>
             
-            let contentHtml = '';
-            if (msg.type === 'text') {
-                contentHtml = `<span class="msg-text">${escapeHtml(msg.content)}</span>`;
-            } else if (msg.type === 'image') {
-                contentHtml = `<img src="${msg.content}" alt="image">`;
-            } else if (msg.type === 'video') {
-                contentHtml = `<video src="${msg.content}" controls></video>`;
-            }
+            <label>Select Your Toon:</label>
+            <input type="hidden" id="selectedToon" required>
+            <div id="toon-list" class="selection-grid">
+                </div>
 
-            bubble.innerHTML = contentHtml;
+            <br>
+            <label>Select Trinkets (Click multiple):</label>
+            <div id="trinket-list" class="selection-grid">
+                </div>
+        </div>
 
-            // Assemble
-            if (isSelf) {
-                row.appendChild(bubble);
-                row.appendChild(pfp);
+        <div class="form-section">
+            <h2>Team</h2>
+            <div id="team-container"></div>
+            <button type="button" class="btn-action" style="background:#555;" onclick="addTeammate()">+ Add Teammate (Max 7)</button>
+        </div>
+
+        <div class="form-section">
+            <h2>Player Stats</h2>
+            <label style="display:inline-flex; align-items:center; gap:10px;">
+                <input type="checkbox" id="statsToggle" style="width:auto;" onchange="toggleStats()"> Include Current Account Stats?
+            </label>
+            
+            <div id="stats-inputs" class="form-grid hidden" style="margin-top:15px;">
+                <div><label>Toons Owned</label><input type="number" id="statToons"></div>
+                <div><label>Trinkets Owned</label><input type="number" id="statTrinkets"></div>
+                <div><label>Blackouts</label><input type="number" id="statBlackouts"></div>
+                <div><label>Ichor Total</label><input type="number" id="statIchor"></div>
+                <div><label>Dandy Items Bought</label><input type="number" id="statDandyItems"></div>
+                <div><label>Floors Survived</label><input type="number" id="statFloors"></div>
+                <div><label>Machines Finished</label><input type="number" id="statMachines"></div>
+                <div><label>Furthest Floor</label><input type="number" id="statFurthest"></div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>Evidence</h2>
+            <label>Image URLs (Comma separated)</label>
+            <textarea id="imageUrls" rows="3" placeholder="https://imgur.com/..., https://..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-action" style="width:100%; font-size:1.2rem;">CREATE GOAL CARD</button>
+    </form>
+
+    <div id="results-area"></div>
+</div>
+
+<script>
+    // --- 1. MOCK DATA (As requested in JSON format) ---
+    // In a real app, you would fetch these from 'toons.json'
+    
+    const toonsData = [
+        { "name": "Boxten", "image": "https://tr.rbxcdn.com/180DAY-c7604533089408272935403061730043/420/420/Image/Webp/noScale", "type": "main" },
+        { "name": "Poppy", "image": "https://tr.rbxcdn.com/180DAY-21808801452243004118833501740043/420/420/Image/Webp/noScale", "type": "normal" },
+        { "name": "Pebble", "image": "https://tr.rbxcdn.com/180DAY-83350433089408272935403061730043/420/420/Image/Webp/noScale", "type": "lethal" },
+        { "name": "Rodger", "image": "https://tr.rbxcdn.com/180DAY-6302e128173489278784992923940192/420/420/Image/Webp/noScale", "type": "normal" },
+        { "name": "Tisha", "image": "https://tr.rbxcdn.com/180DAY-928392839283.png", "type": "normal" }, // Placeholder URL
+        { "name": "Flutter", "image": "https://via.placeholder.com/150/FFA500?text=Flutter", "type": "halloween" },
+        { "name": "Sprout", "image": "https://via.placeholder.com/150/FF0000?text=Sprout", "type": "christmas-main" }
+    ];
+
+    const trinketsData = [
+        { "name": "Pink Bow", "image": "https://via.placeholder.com/100?text=Bow", "type": "normal" },
+        { "name": "Dandy Plush", "image": "https://via.placeholder.com/100?text=Plush", "type": "main" },
+        { "name": "Bone", "image": "https://via.placeholder.com/100?text=Bone", "type": "lethal" },
+        { "name": "Candy", "image": "https://via.placeholder.com/100?text=Candy", "type": "halloween-main" },
+        { "name": "Egg", "image": "https://via.placeholder.com/100?text=Egg", "type": "easter" }
+    ];
+
+    // --- 2. INITIALIZATION ---
+
+    let selectedTrinkets = [];
+    let teammateCount = 0;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        renderItems(toonsData, 'toon-list', 'toon');
+        renderItems(trinketsData, 'trinket-list', 'trinket');
+    });
+
+    // --- 3. FUNCTIONS ---
+
+    function renderItems(data, containerId, category) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+
+        data.forEach(item => {
+            const btn = document.createElement('div');
+            // Determine class based on type
+            const typeClass = `type-${item.type}`;
+            btn.className = `item-btn ${typeClass}`;
+            
+            // Check if it's a complex border (main variants) that needs inner wrapper
+            const isComplex = item.type.includes('main') || item.type.includes('easter-main');
+            
+            let contentHtml = `<img src="${item.image}" alt="${item.name}"><span>${item.name}</span>`;
+            
+            if(isComplex) {
+                btn.innerHTML = `<div class="inner-content">${contentHtml}</div>`;
             } else {
-                row.appendChild(pfp);
-                row.appendChild(bubble);
+                btn.innerHTML = contentHtml;
             }
 
-            container.appendChild(row);
-        }
-
-        function sendMessage(type = 'text', content = null) {
-            const input = document.getElementById('message-input');
-            const finalContent = content || input.value;
-
-            if (!finalContent.trim() && type === 'text') return;
-
-            const msgObj = {
-                sender: currentUser,
-                type: type,
-                content: finalContent,
-                timestamp: Date.now()
-            };
-
-            // Save to LocalStorage
-            const history = getHistory();
-            history.push(msgObj);
-            localStorage.setItem('chatHistory', JSON.stringify(history));
-
-            // Render
-            renderMessage(msgObj);
-            scrollToBottom();
-
-            if (type === 'text') input.value = '';
-        }
-
-        function handleEnter(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        }
-
-        function scrollToBottom() {
-            const container = document.getElementById('messages-container');
-            container.scrollTop = container.scrollHeight;
-        }
-
-        // --- MEDIA HANDLING ---
-        function handleFileUpload(input) {
-            const file = input.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const type = file.type.startsWith('video') ? 'video' : 'image';
-                sendMessage(type, e.target.result);
-            };
-            reader.readAsDataURL(file); // Convert to Base64
-            input.value = ''; // Reset input
-        }
-
-        // --- SEARCH ---
-        function filterMessages() {
-            const term = document.getElementById('search-bar').value.toLowerCase();
-            const bubbles = document.querySelectorAll('.message-row');
-
-            bubbles.forEach(row => {
-                const textSpan = row.querySelector('.msg-text');
-                if (textSpan) {
-                    const text = textSpan.innerText.toLowerCase();
-                    if (text.includes(term)) {
-                        row.style.display = 'flex';
+            // Click Logic
+            btn.addEventListener('click', () => {
+                if (category === 'toon') {
+                    // Single select for Toon
+                    document.querySelectorAll(`#toon-list .item-btn`).forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    document.getElementById('selectedToon').value = JSON.stringify(item);
+                } else {
+                    // Multi select for Trinkets
+                    btn.classList.toggle('selected');
+                    if (btn.classList.contains('selected')) {
+                        selectedTrinkets.push(item);
                     } else {
-                        row.style.display = 'none';
+                        selectedTrinkets = selectedTrinkets.filter(t => t.name !== item.name);
                     }
                 }
             });
-        }
 
-        // --- UTILS ---
-        function escapeHtml(text) {
-            return text
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+            container.appendChild(btn);
+        });
+    }
+
+    function toggleStats() {
+        const statsDiv = document.getElementById('stats-inputs');
+        statsDiv.classList.toggle('hidden');
+    }
+
+    function addTeammate() {
+        if (teammateCount >= 7) {
+            alert("Max team limit reached (7).");
+            return;
         }
+        teammateCount++;
+        const container = document.getElementById('team-container');
+        const div = document.createElement('div');
+        div.className = 'teammate-entry';
+        div.id = `teammate-${teammateCount}`;
+        div.innerHTML = `
+            <div style="display:flex; justify-content:space-between;">
+                <strong>Teammate #${teammateCount}</strong>
+                <button type="button" onclick="this.parentElement.parentElement.remove(); teammateCount--;" style="background:red; border:none; color:white; border-radius:4px; cursor:pointer;">X</button>
+            </div>
+            <div class="form-grid" style="margin-top:10px;">
+                <input type="text" class="tm-name" placeholder="Teammate Name">
+                <input type="text" class="tm-toon" placeholder="Teammate Toon Name">
+                <input type="text" class="tm-trinkets" placeholder="Teammate Trinkets">
+            </div>
+        `;
+        container.appendChild(div);
+    }
+
+    // --- 4. FORM SUBMISSION ---
+
+    document.getElementById('runForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        // Gather Data
+        const user = document.getElementById('username').value;
+        const display = document.getElementById('displayName').value || user;
+        const floor = document.getElementById('floorReached').value;
+        const diedTo = document.getElementById('diedTo').value;
+        const date = document.getElementById('runDate').value;
+        const type = document.getElementById('runType').value;
         
-        // Storage Listener (Updates chat if opened in another tab)
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'chatHistory') {
-                loadMessages();
-            }
+        let myToon = document.getElementById('selectedToon').value;
+        myToon = myToon ? JSON.parse(myToon) : {name: "None", image: ""};
+        
+        // Gather Teammates
+        let teammatesHTML = '';
+        document.querySelectorAll('.teammate-entry').forEach(tm => {
+            const name = tm.querySelector('.tm-name').value;
+            const toon = tm.querySelector('.tm-toon').value;
+            if(name) teammatesHTML += `<div class="stat-item">${name} (${toon})</div>`;
         });
 
-    </script>
+        // Gather Images
+        const imgUrls = document.getElementById('imageUrls').value.split(',');
+        let galleryHTML = '';
+        imgUrls.forEach(url => {
+            if(url.trim()) galleryHTML += `<img src="${url.trim()}" onclick="window.open(this.src)">`;
+        });
+
+        // Optional Stats
+        let statsHTML = '';
+        if(document.getElementById('statsToggle').checked) {
+            statsHTML = `
+                <div style="margin-top:15px; border-top:1px dashed #555; padding-top:10px;">
+                    <strong style="color:var(--accent)">Account Stats Snapshot:</strong>
+                    <div class="stat-grid">
+                        <div class="stat-item"><span class="stat-label">Toons:</span> ${document.getElementById('statToons').value}</div>
+                        <div class="stat-item"><span class="stat-label">Trinkets:</span> ${document.getElementById('statTrinkets').value}</div>
+                        <div class="stat-item"><span class="stat-label">Ichor:</span> ${document.getElementById('statIchor').value}</div>
+                        <div class="stat-item"><span class="stat-label">Blackouts:</span> ${document.getElementById('statBlackouts').value}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Generate Card HTML
+        const card = document.createElement('div');
+        card.className = 'goal-card';
+        card.innerHTML = `
+            <div class="goal-header">
+                <div>
+                    <span style="font-size:1.5rem; font-weight:bold;">${type} Run</span>
+                    <br>
+                    <span style="color:#aaa; font-size:0.8rem;">${new Date(date).toLocaleString()}</span>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:1.2rem;">${display}</div>
+                    <div style="color:#aaa; font-size:0.8rem;">@${user}</div>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:20px; align-items:flex-start;">
+                <div class="item-btn type-${myToon.type || 'normal'}" style="pointer-events:none; transform:none;">
+                    ${myToon.type && myToon.type.includes('main') 
+                        ? `<div class="inner-content"><img src="${myToon.image}"><span>${myToon.name}</span></div>` 
+                        : `<img src="${myToon.image}"><span>${myToon.name}</span>`}
+                </div>
+                
+                <div style="flex-grow:1;">
+                    <div class="stat-grid">
+                        <div class="stat-item"><span class="stat-label">Floor Reached:</span> <strong>${floor}</strong></div>
+                        <div class="stat-item"><span class="stat-label">Died To:</span> <span style="color:red">${diedTo}</span></div>
+                        <div class="stat-item"><span class="stat-label">Ichor Earned:</span> ${document.getElementById('ichorReceived').value}</div>
+                        <div class="stat-item"><span class="stat-label">Events:</span> ${document.getElementById('eventsExp').value}</div>
+                    </div>
+                    
+                    ${selectedTrinkets.length > 0 ? `<div style="margin-top:10px;"><span class="stat-label">Trinkets:</span> ` + selectedTrinkets.map(t => t.name).join(', ') + `</div>` : ''}
+                </div>
+            </div>
+
+            ${teammatesHTML ? `<div style="margin-top:15px;"><span class="stat-label">Team:</span><div class="stat-grid">${teammatesHTML}</div></div>` : ''}
+            
+            ${statsHTML}
+
+            ${galleryHTML ? `<div class="screenshot-gallery">${galleryHTML}</div>` : ''}
+        `;
+
+        // Prepend to results area
+        const results = document.getElementById('results-area');
+        results.insertBefore(card, results.firstChild);
+        
+        // Scroll to new card
+        card.scrollIntoView({behavior: 'smooth'});
+    });
+</script>
+
 </body>
 </html>
