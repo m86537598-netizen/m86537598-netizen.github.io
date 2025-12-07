@@ -3,377 +3,343 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DandyFinder - Stats Tracker</title>
+    <title>DandyFinder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #1a1a1a;
-            --card-bg: #2d2d2d;
-            --text-color: #f0f0f0;
-            --accent: #ff6b6b;
-            --border-radius: 12px;
+            --bg: #121212;
+            --panel: #1e1e1e;
+            --input-bg: #2a2a2a;
+            --text: #ffffff;
+            --accent: #6c5ce7;
+            --font-main: 'Fredoka One', cursive;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-main);
             margin: 0;
             padding: 20px;
         }
 
-        h1, h2, h3 { text-align: center; margin-bottom: 20px; }
-        h1 { color: var(--accent); font-size: 3rem; text-transform: uppercase; letter-spacing: 2px; }
+        h1, h2, h3 { letter-spacing: 1px; margin: 10px 0; }
+        h1 { color: #a29bfe; font-size: 3rem; text-align: center; text-shadow: 4px 4px 0px #000; }
 
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
+        .container { max-width: 1100px; margin: 0 auto; }
+
+        /* --- JSON EDITING VISUALS --- */
+        .json-note {
+            background: #333; color: #aaa; padding: 10px; font-family: monospace; font-size: 0.8rem;
+            margin-bottom: 20px; border-left: 5px solid yellow;
         }
 
-        /* --- Input Form Styling --- */
-        .tracker-form {
-            background: var(--card-bg);
-            padding: 25px;
-            border-radius: var(--border-radius);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        /* --- INPUTS --- */
+        input, select, textarea {
+            background: var(--input-bg);
+            border: 2px solid #444;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: sans-serif; /* Readable for typing */
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            transition: 0.2s;
+        }
+        input:focus, select:focus { border-color: var(--accent); outline: none; }
+        label { color: #ccc; font-size: 0.9rem; font-family: sans-serif; }
+
+        /* --- THE GRID (Toons/Trinkets) --- */
+        .selection-area {
+            background: var(--panel);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 0px #000;
         }
 
-        .form-section {
-            margin-bottom: 25px;
-            border-bottom: 1px solid #444;
-            padding-bottom: 15px;
+        .grid-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
         }
 
+        /* --- THE BUTTONS & BORDERS --- */
+        .game-btn {
+            width: 100px;
+            height: 120px;
+            position: relative;
+            background: #222;
+            cursor: pointer;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s;
+            /* Default clear border area */
+            padding: 6px; 
+            box-sizing: border-box;
+        }
+        
+        .game-btn:active { transform: translateY(4px); }
+        .game-btn:hover { z-index: 10; transform: scale(1.05); }
+        .game-btn.selected { transform: scale(1.1); box-shadow: 0 0 0 4px white; z-index: 20; }
+
+        .game-btn img {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 6px;
+            background: #000;
+        }
+        
+        .game-btn span {
+            margin-top: 5px;
+            font-size: 0.8rem;
+            text-align: center;
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* --- BORDER LOGIC --- */
+        
+        /* 1. Main (Rainbow Gradient) */
+        .border-main {
+            background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8);
+            background-size: 200% 200%;
+            animation: rainbow 3s ease infinite;
+        }
+        @keyframes rainbow { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+
+        /* 2. Lethal (Red) */
+        .border-lethal { background: #ff0000; box-shadow: 0 0 10px #ff0000; }
+
+        /* 3. Halloween (Orange) */
+        .border-halloween { background: #ff8c00; box-shadow: 0 0 5px #ff8c00; }
+
+        /* 4. Halloween-Main (Rainbow Outer, Orange Inner) */
+        .border-halloween-main {
+            background: linear-gradient(45deg, red, orange, yellow, green, blue, purple);
+        }
+        .border-halloween-main img { border: 3px solid #ff8c00; box-sizing: border-box; }
+
+        /* 5. Christmas (Candy Cane) */
+        .border-christmas {
+            background: repeating-linear-gradient(45deg, #cc0000, #cc0000 10px, #ffffff 10px, #ffffff 20px);
+        }
+
+        /* 6. Christmas-Main (Rainbow Outer, Candy Inner) */
+        .border-christmas-main {
+            background: linear-gradient(45deg, red, orange, yellow, green, blue, purple);
+        }
+        .border-christmas-main img {
+            border: 3px solid white;
+            outline: 3px solid red;
+            box-sizing: border-box;
+            /* Outline offset hack to put it inside */
+            outline-offset: -3px; 
+        }
+
+        /* 7. Easter (Green) */
+        .border-easter { background: #32cd32; box-shadow: 0 0 5px #32cd32; }
+
+        /* 8. Easter-Main (Green + Rainbow) */
+        .border-easter-main {
+            background: linear-gradient(45deg, red, orange, yellow, green, blue, purple);
+        }
+        .border-easter-main img { border: 3px solid #32cd32; box-sizing: border-box; }
+
+        /* 9. Normal */
+        .border-normal { background: #555; }
+        
+        /* Inner Content Mask for all buttons to keep image clean */
+        .game-btn-inner {
+            background: #1e1e1e;
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+            box-sizing: border-box;
+        }
+
+        /* --- FORM LAYOUT --- */
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
         }
-
-        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; color: #ccc;}
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            background: #3d3d3d;
-            border: 1px solid #555;
-            color: white;
-            border-radius: 6px;
-            box-sizing: border-box; /* Fix padding issues */
-        }
-
-        /* --- The Selection Grids (Toons/Trinkets) --- */
-        .selection-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
-            max-height: 300px;
-            overflow-y: auto;
-            background: #222;
-            padding: 10px;
-            border-radius: 8px;
-        }
-
-        .item-btn {
-            width: 80px;
-            height: 100px;
-            background: #333;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            transition: transform 0.2s, filter 0.2s;
-            position: relative;
-            overflow: hidden;
-            padding: 5px;
-        }
-
-        .item-btn:hover { transform: scale(1.1); z-index: 10; }
-        .item-btn.selected { transform: scale(1.1); box-shadow: 0 0 10px white; }
         
-        .item-btn img {
-            width: 50px;
-            height: 50px;
-            object-fit: contain;
-            border-radius: 4px;
-            margin-bottom: 5px;
-        }
-
-        .item-btn span {
-            font-size: 0.7rem;
-            text-align: center;
-            line-height: 1.1;
-            color: white;
-        }
-
-        /* --- BORDER TYPES LOGIC --- */
-        /* Base border setup for the image inside the button */
-        .item-btn img { border: 3px solid transparent; }
-
-        /* Normal */
-        .type-normal img { border-color: #777; }
-
-        /* Lethal (Red) */
-        .type-lethal img { border-color: #ff0000; box-shadow: 0 0 5px #ff0000; }
-
-        /* Main (Rainbow) */
-        .type-main { 
-            background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet);
-            padding: 3px !important; 
-        }
-        .type-main .inner-content { background: #333; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-
-        /* Halloween (Orange) */
-        .type-halloween img { border-color: #ff8c00; box-shadow: 0 0 5px #ff8c00; }
-
-        /* Halloween Main (Rainbow + Orange) */
-        .type-halloween-main {
-            background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet);
-            padding: 3px !important;
-        }
-        .type-halloween-main img { border: 2px solid #ff8c00; }
-
-        /* Christmas (White/Red Gradient) */
-        .type-christmas img { 
-            border-image: repeating-linear-gradient(45deg, red, red 5px, white 5px, white 10px) 1;
-        }
-
-        /* Christmas Main (Rainbow + Christmas) */
-        .type-christmas-main {
-             background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet);
-             padding: 3px !important;
-        }
-        .type-christmas-main img {
-            border: 2px solid white;
-            outline: 2px solid red; /* Simulate stripe effect simply */
-        }
-
-        /* Easter (Green) */
-        .type-easter img { border-color: #32cd32; }
-
-        /* Easter Main (Green + Rainbow) */
-        .type-easter-main {
-            background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet);
-            padding: 3px !important;
-        }
-        .type-easter-main img { border: 2px solid #32cd32; }
-
-
-        /* --- Team Section --- */
-        #team-container { margin-top: 10px; }
-        .teammate-entry {
-            background: #333;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-left: 4px solid var(--accent);
-            border-radius: 4px;
-        }
-        .btn-action {
+        .btn-submit {
             background: var(--accent);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
+            width: 100%;
+            padding: 15px;
+            font-size: 1.5rem;
+            font-family: var(--font-main);
+            border-radius: 10px;
             cursor: pointer;
-            font-weight: bold;
-            margin-top: 10px;
+            box-shadow: 0 6px 0 #483d8b;
+            margin-top: 20px;
         }
-        .btn-action:hover { filter: brightness(1.1); }
-        
-        .hidden { display: none; }
+        .btn-submit:active { box-shadow: 0 2px 0 #483d8b; transform: translateY(4px); }
 
-        /* --- Result Card Styling --- */
-        #results-area { margin-top: 50px; }
-        .goal-card {
+        /* --- RESULT CARD --- */
+        .result-card {
             background: #252525;
-            border: 2px solid #444;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            animation: fadeIn 0.5s ease;
+            border: 4px solid #444;
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 40px;
+            font-family: sans-serif;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .result-header {
+            display: flex; justify-content: space-between; align-items: flex-end;
+            border-bottom: 2px solid #555; padding-bottom: 15px; margin-bottom: 15px;
+        }
+        .result-title { font-family: var(--font-main); font-size: 2rem; color: var(--accent); }
+        .stat-badge { 
+            background: #333; padding: 5px 10px; border-radius: 5px; 
+            font-size: 0.9rem; margin-right: 5px; display: inline-block; margin-bottom: 5px;
+        }
+        .stat-badge b { color: #fff; }
+        .stat-badge span { color: #aaa; }
 
-        .goal-header { border-bottom: 1px solid #555; padding-bottom: 10px; margin-bottom: 10px; display: flex; justify-content: space-between;}
-        .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 0.9rem; }
-        .stat-item { background: #333; padding: 5px 10px; border-radius: 4px; }
-        .stat-label { color: #aaa; font-size: 0.8rem; }
-        
-        .toon-display { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
-        .toon-display img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-
-        .screenshot-gallery { display: flex; gap: 10px; overflow-x: auto; margin-top: 10px; }
-        .screenshot-gallery img { max-height: 100px; border-radius: 5px; border: 1px solid #555; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>DandyFinder</h1>
-    <h3>Run & Stats Tracker</h3>
+    <div class="json-note">
+        JSON Data is loaded from the HTML script tags below. You can edit the code to change the lists.
+    </div>
 
-    <form class="tracker-form" id="runForm">
-        
-        <div class="form-section">
-            <h2>Run Details</h2>
-            <div class="form-grid">
-                <div>
-                    <label>Username</label>
-                    <input type="text" id="username" placeholder="RobloxUser123" required>
-                </div>
-                <div>
-                    <label>Display Name (Optional)</label>
-                    <input type="text" id="displayName" placeholder="Cool Player">
-                </div>
-                <div>
-                    <label>Date/Time</label>
-                    <input type="datetime-local" id="runDate" required>
-                </div>
-                <div>
-                    <label>Run Type</label>
-                    <select id="runType">
-                        <option value="Standard">Standard</option>
-                        <option value="Challenge">Challenge</option>
-                        <option value="Speedrun">Speedrun</option>
-                    </select>
-                </div>
-            </div>
-        </div>
+    <script id="json-toons" type="application/json">
+    [
+        { "name": "Boxten", "image": "https://tr.rbxcdn.com/180DAY-c7604533089408272935403061730043/420/420/Image/Webp/noScale", "type": "normal" },
+        { "name": "Poppy", "image": "https://tr.rbxcdn.com/180DAY-21808801452243004118833501740043/420/420/Image/Webp/noScale", "type": "normal" },
+        { "name": "Pebble", "image": "", "type": "main" },
+        { "name": "Flutter", "image": "", "type": "normal" },
+        { "name": "Sprout", "image": "", "type": "main" }
+    ]
+    </script>
 
-        <div class="form-section">
-            <h2>Performance</h2>
-            <div class="form-grid">
-                <div><label>Floor Reached</label><input type="number" id="floorReached" required></div>
-                <div><label>Highest Floor (PB)</label><input type="number" id="highestFloor"></div>
-                <div><label>Twisted Died To</label><input type="text" id="diedTo" placeholder="e.g. Twisted Boxten"></div>
-                <div><label>Ichor Received</label><input type="number" id="ichorReceived"></div>
-                <div><label>Dandy Items Purchased</label><input type="number" id="dandyItemsRun"></div>
+    <script id="json-trinkets" type="application/json">
+    [
+        { "name": "Pink Bow", "image": "", "type": "normal" },
+        { "name": "Dandy Plush", "image": "", "type": "lethal" }
+    ]
+    </script>
+    
+    <div class="selection-area">
+        <h3>1. Select Toon</h3>
+        <input type="hidden" id="input-toon">
+        <div id="toon-grid" class="grid-list"></div>
+    </div>
+
+    <div class="selection-area">
+        <h3>2. Select Trinkets</h3>
+        <div id="trinket-grid" class="grid-list"></div>
+    </div>
+
+    <div class="selection-area" style="background:transparent; padding:0; box-shadow:none;">
+        <div class="form-grid">
+            <div>
+                <label>User</label>
+                <input type="text" id="input-user" placeholder="Roblox Username">
             </div>
             <div>
-                <label>Events Experienced</label>
-                <input type="text" id="eventsExp" placeholder="e.g. Blackout, Panic">
+                <label>Display Name</label>
+                <input type="text" id="input-display" placeholder="Display Name (Opt)">
+            </div>
+            <div>
+                <label>Floor Reached</label>
+                <input type="number" id="input-floor">
+            </div>
+             <div>
+                <label>Died To</label>
+                <input type="text" id="input-died" placeholder="Twisted...">
+            </div>
+            <div>
+                <label>Run Type</label>
+                <select id="input-runtype">
+                    <option>Standard</option>
+                    <option>Challenge</option>
+                </select>
             </div>
         </div>
-
-        <div class="form-section">
-            <h2>Your Loadout</h2>
-            <p style="font-size:0.8rem; color:#aaa;">Click to select.</p>
-            
-            <label>Select Your Toon:</label>
-            <input type="hidden" id="selectedToon" required>
-            <div id="toon-list" class="selection-grid">
-                </div>
-
-            <br>
-            <label>Select Trinkets (Click multiple):</label>
-            <div id="trinket-list" class="selection-grid">
-                </div>
+        
+        <br>
+        <button type="button" onclick="toggleStats()" style="background:#444; color:white; border:none; padding:10px; cursor:pointer;">+ Toggle Advanced Stats</button>
+        <div id="advanced-stats" class="form-grid" style="display:none; margin-top:10px; border-top:1px dashed #555; padding-top:10px;">
+            <input type="number" id="stat-toons" placeholder="Toons Owned">
+            <input type="number" id="stat-trinkets" placeholder="Trinkets Owned">
+            <input type="number" id="stat-ichor" placeholder="Total Ichor">
+            <input type="number" id="stat-floors" placeholder="Floors Survived">
         </div>
 
-        <div class="form-section">
-            <h2>Team</h2>
-            <div id="team-container"></div>
-            <button type="button" class="btn-action" style="background:#555;" onclick="addTeammate()">+ Add Teammate (Max 7)</button>
-        </div>
+        <button class="btn-submit" onclick="createGoal()">CREATE GOAL CARD</button>
+    </div>
 
-        <div class="form-section">
-            <h2>Player Stats</h2>
-            <label style="display:inline-flex; align-items:center; gap:10px;">
-                <input type="checkbox" id="statsToggle" style="width:auto;" onchange="toggleStats()"> Include Current Account Stats?
-            </label>
-            
-            <div id="stats-inputs" class="form-grid hidden" style="margin-top:15px;">
-                <div><label>Toons Owned</label><input type="number" id="statToons"></div>
-                <div><label>Trinkets Owned</label><input type="number" id="statTrinkets"></div>
-                <div><label>Blackouts</label><input type="number" id="statBlackouts"></div>
-                <div><label>Ichor Total</label><input type="number" id="statIchor"></div>
-                <div><label>Dandy Items Bought</label><input type="number" id="statDandyItems"></div>
-                <div><label>Floors Survived</label><input type="number" id="statFloors"></div>
-                <div><label>Machines Finished</label><input type="number" id="statMachines"></div>
-                <div><label>Furthest Floor</label><input type="number" id="statFurthest"></div>
-            </div>
-        </div>
-
-        <div class="form-section">
-            <h2>Evidence</h2>
-            <label>Image URLs (Comma separated)</label>
-            <textarea id="imageUrls" rows="3" placeholder="https://imgur.com/..., https://..."></textarea>
-        </div>
-
-        <button type="submit" class="btn-action" style="width:100%; font-size:1.2rem;">CREATE GOAL CARD</button>
-    </form>
-
-    <div id="results-area"></div>
+    <div id="output-area"></div>
 </div>
 
 <script>
-    // --- 1. MOCK DATA (As requested in JSON format) ---
-    // In a real app, you would fetch these from 'toons.json'
-    
-    const toonsData = [
-        { "name": "Boxten", "image": "https://tr.rbxcdn.com/180DAY-c7604533089408272935403061730043/420/420/Image/Webp/noScale", "type": "main" },
-        { "name": "Poppy", "image": "https://tr.rbxcdn.com/180DAY-21808801452243004118833501740043/420/420/Image/Webp/noScale", "type": "normal" },
-        { "name": "Pebble", "image": "https://tr.rbxcdn.com/180DAY-83350433089408272935403061730043/420/420/Image/Webp/noScale", "type": "lethal" },
-        { "name": "Rodger", "image": "https://tr.rbxcdn.com/180DAY-6302e128173489278784992923940192/420/420/Image/Webp/noScale", "type": "normal" },
-        { "name": "Tisha", "image": "https://tr.rbxcdn.com/180DAY-928392839283.png", "type": "normal" }, // Placeholder URL
-        { "name": "Flutter", "image": "https://via.placeholder.com/150/FFA500?text=Flutter", "type": "halloween" },
-        { "name": "Sprout", "image": "https://via.placeholder.com/150/FF0000?text=Sprout", "type": "christmas-main" }
-    ];
+    // 1. Load JSON from HTML Script Tags
+    let toons = [];
+    let trinkets = [];
 
-    const trinketsData = [
-        { "name": "Pink Bow", "image": "https://via.placeholder.com/100?text=Bow", "type": "normal" },
-        { "name": "Dandy Plush", "image": "https://via.placeholder.com/100?text=Plush", "type": "main" },
-        { "name": "Bone", "image": "https://via.placeholder.com/100?text=Bone", "type": "lethal" },
-        { "name": "Candy", "image": "https://via.placeholder.com/100?text=Candy", "type": "halloween-main" },
-        { "name": "Egg", "image": "https://via.placeholder.com/100?text=Egg", "type": "easter" }
-    ];
+    try {
+        toons = JSON.parse(document.getElementById('json-toons').textContent);
+        trinkets = JSON.parse(document.getElementById('json-trinkets').textContent);
+    } catch (e) {
+        console.error("JSON Error: Check your commas and quotes!", e);
+        alert("Error parsing JSON. Check console.");
+    }
 
-    // --- 2. INITIALIZATION ---
-
+    let selectedToon = null;
     let selectedTrinkets = [];
-    let teammateCount = 0;
 
-    document.addEventListener('DOMContentLoaded', () => {
-        renderItems(toonsData, 'toon-list', 'toon');
-        renderItems(trinketsData, 'trinket-list', 'trinket');
-    });
-
-    // --- 3. FUNCTIONS ---
-
-    function renderItems(data, containerId, category) {
+    // 2. Render Functions
+    function renderGrid(data, containerId, type) {
         const container = document.getElementById(containerId);
         container.innerHTML = '';
 
         data.forEach(item => {
             const btn = document.createElement('div');
-            // Determine class based on type
-            const typeClass = `type-${item.type}`;
-            btn.className = `item-btn ${typeClass}`;
+            // Apply border class based on JSON type
+            btn.className = `game-btn border-${item.type}`;
             
-            // Check if it's a complex border (main variants) that needs inner wrapper
-            const isComplex = item.type.includes('main') || item.type.includes('easter-main');
-            
-            let contentHtml = `<img src="${item.image}" alt="${item.name}"><span>${item.name}</span>`;
-            
-            if(isComplex) {
-                btn.innerHTML = `<div class="inner-content">${contentHtml}</div>`;
-            } else {
-                btn.innerHTML = contentHtml;
-            }
+            // Handle missing images with a default gray box URL
+            const imgUrl = item.image && item.image.length > 5 ? item.image : "https://via.placeholder.com/150/333333/ffffff?text=?";
 
-            // Click Logic
+            btn.innerHTML = `
+                <div class="game-btn-inner">
+                    <img src="${imgUrl}" alt="${item.name}">
+                    <span>${item.name}</span>
+                </div>
+            `;
+
             btn.addEventListener('click', () => {
-                if (category === 'toon') {
-                    // Single select for Toon
-                    document.querySelectorAll(`#toon-list .item-btn`).forEach(b => b.classList.remove('selected'));
+                if(type === 'toon') {
+                    // Deselect all other toons
+                    document.querySelectorAll('#toon-grid .game-btn').forEach(b => b.classList.remove('selected'));
                     btn.classList.add('selected');
-                    document.getElementById('selectedToon').value = JSON.stringify(item);
+                    selectedToon = item;
                 } else {
-                    // Multi select for Trinkets
+                    // Toggle trinkets
                     btn.classList.toggle('selected');
-                    if (btn.classList.contains('selected')) {
+                    if(btn.classList.contains('selected')) {
                         selectedTrinkets.push(item);
                     } else {
                         selectedTrinkets = selectedTrinkets.filter(t => t.name !== item.name);
@@ -386,131 +352,64 @@
     }
 
     function toggleStats() {
-        const statsDiv = document.getElementById('stats-inputs');
-        statsDiv.classList.toggle('hidden');
+        const stats = document.getElementById('advanced-stats');
+        stats.style.display = stats.style.display === 'none' ? 'grid' : 'none';
     }
 
-    function addTeammate() {
-        if (teammateCount >= 7) {
-            alert("Max team limit reached (7).");
-            return;
-        }
-        teammateCount++;
-        const container = document.getElementById('team-container');
-        const div = document.createElement('div');
-        div.className = 'teammate-entry';
-        div.id = `teammate-${teammateCount}`;
-        div.innerHTML = `
-            <div style="display:flex; justify-content:space-between;">
-                <strong>Teammate #${teammateCount}</strong>
-                <button type="button" onclick="this.parentElement.parentElement.remove(); teammateCount--;" style="background:red; border:none; color:white; border-radius:4px; cursor:pointer;">X</button>
-            </div>
-            <div class="form-grid" style="margin-top:10px;">
-                <input type="text" class="tm-name" placeholder="Teammate Name">
-                <input type="text" class="tm-toon" placeholder="Teammate Toon Name">
-                <input type="text" class="tm-trinkets" placeholder="Teammate Trinkets">
-            </div>
-        `;
-        container.appendChild(div);
-    }
-
-    // --- 4. FORM SUBMISSION ---
-
-    document.getElementById('runForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        // Gather Data
-        const user = document.getElementById('username').value;
-        const display = document.getElementById('displayName').value || user;
-        const floor = document.getElementById('floorReached').value;
-        const diedTo = document.getElementById('diedTo').value;
-        const date = document.getElementById('runDate').value;
-        const type = document.getElementById('runType').value;
+    function createGoal() {
+        const user = document.getElementById('input-user').value || "Unknown";
+        const floor = document.getElementById('input-floor').value || "0";
+        const died = document.getElementById('input-died').value || "Survived";
         
-        let myToon = document.getElementById('selectedToon').value;
-        myToon = myToon ? JSON.parse(myToon) : {name: "None", image: ""};
-        
-        // Gather Teammates
-        let teammatesHTML = '';
-        document.querySelectorAll('.teammate-entry').forEach(tm => {
-            const name = tm.querySelector('.tm-name').value;
-            const toon = tm.querySelector('.tm-toon').value;
-            if(name) teammatesHTML += `<div class="stat-item">${name} (${toon})</div>`;
-        });
+        // Build Trinket String
+        const trinketNames = selectedTrinkets.map(t => t.name).join(", ");
 
-        // Gather Images
-        const imgUrls = document.getElementById('imageUrls').value.split(',');
-        let galleryHTML = '';
-        imgUrls.forEach(url => {
-            if(url.trim()) galleryHTML += `<img src="${url.trim()}" onclick="window.open(this.src)">`;
-        });
-
-        // Optional Stats
-        let statsHTML = '';
-        if(document.getElementById('statsToggle').checked) {
-            statsHTML = `
-                <div style="margin-top:15px; border-top:1px dashed #555; padding-top:10px;">
-                    <strong style="color:var(--accent)">Account Stats Snapshot:</strong>
-                    <div class="stat-grid">
-                        <div class="stat-item"><span class="stat-label">Toons:</span> ${document.getElementById('statToons').value}</div>
-                        <div class="stat-item"><span class="stat-label">Trinkets:</span> ${document.getElementById('statTrinkets').value}</div>
-                        <div class="stat-item"><span class="stat-label">Ichor:</span> ${document.getElementById('statIchor').value}</div>
-                        <div class="stat-item"><span class="stat-label">Blackouts:</span> ${document.getElementById('statBlackouts').value}</div>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Generate Card HTML
         const card = document.createElement('div');
-        card.className = 'goal-card';
+        card.className = 'result-card';
+        
+        // Toon Image Logic
+        let toonImgHtml = '';
+        if(selectedToon) {
+            const imgUrl = selectedToon.image && selectedToon.image.length > 5 ? selectedToon.image : "https://via.placeholder.com/150/333333/ffffff?text=?";
+            // We reuse the button styling for the display
+            toonImgHtml = `
+            <div class="game-btn border-${selectedToon.type}" style="cursor:default; transform:none; width:80px; height:100px;">
+                <div class="game-btn-inner">
+                    <img src="${imgUrl}">
+                </div>
+            </div>`;
+        }
+
         card.innerHTML = `
-            <div class="goal-header">
+            <div class="result-header">
                 <div>
-                    <span style="font-size:1.5rem; font-weight:bold;">${type} Run</span>
-                    <br>
-                    <span style="color:#aaa; font-size:0.8rem;">${new Date(date).toLocaleString()}</span>
+                    <div class="result-title">FLOOR ${floor}</div>
+                    <div style="color:#888;">${new Date().toLocaleDateString()}</div>
                 </div>
                 <div style="text-align:right;">
-                    <div style="font-size:1.2rem;">${display}</div>
-                    <div style="color:#aaa; font-size:0.8rem;">@${user}</div>
+                    <h2 style="margin:0; color:white;">${document.getElementById('input-display').value || user}</h2>
+                    <span style="color:#666">@${user}</span>
                 </div>
             </div>
 
-            <div style="display:flex; gap:20px; align-items:flex-start;">
-                <div class="item-btn type-${myToon.type || 'normal'}" style="pointer-events:none; transform:none;">
-                    ${myToon.type && myToon.type.includes('main') 
-                        ? `<div class="inner-content"><img src="${myToon.image}"><span>${myToon.name}</span></div>` 
-                        : `<img src="${myToon.image}"><span>${myToon.name}</span>`}
-                </div>
-                
+            <div style="display:flex; gap:20px; align-items:center;">
+                ${toonImgHtml}
                 <div style="flex-grow:1;">
-                    <div class="stat-grid">
-                        <div class="stat-item"><span class="stat-label">Floor Reached:</span> <strong>${floor}</strong></div>
-                        <div class="stat-item"><span class="stat-label">Died To:</span> <span style="color:red">${diedTo}</span></div>
-                        <div class="stat-item"><span class="stat-label">Ichor Earned:</span> ${document.getElementById('ichorReceived').value}</div>
-                        <div class="stat-item"><span class="stat-label">Events:</span> ${document.getElementById('eventsExp').value}</div>
-                    </div>
-                    
-                    ${selectedTrinkets.length > 0 ? `<div style="margin-top:10px;"><span class="stat-label">Trinkets:</span> ` + selectedTrinkets.map(t => t.name).join(', ') + `</div>` : ''}
+                    <div class="stat-badge"><span>Toon:</span> <b>${selectedToon ? selectedToon.name : 'None'}</b></div>
+                    <div class="stat-badge"><span>Fate:</span> <b style="color:#ff6b6b">${died}</b></div>
+                    <div class="stat-badge"><span>Trinkets:</span> <b>${trinketNames || 'None'}</b></div>
                 </div>
             </div>
-
-            ${teammatesHTML ? `<div style="margin-top:15px;"><span class="stat-label">Team:</span><div class="stat-grid">${teammatesHTML}</div></div>` : ''}
-            
-            ${statsHTML}
-
-            ${galleryHTML ? `<div class="screenshot-gallery">${galleryHTML}</div>` : ''}
         `;
 
-        // Prepend to results area
-        const results = document.getElementById('results-area');
-        results.insertBefore(card, results.firstChild);
-        
-        // Scroll to new card
-        card.scrollIntoView({behavior: 'smooth'});
-    });
-</script>
+        const output = document.getElementById('output-area');
+        output.insertBefore(card, output.firstChild);
+    }
 
+    // Init
+    renderGrid(toons, 'toon-grid', 'toon');
+    renderGrid(trinkets, 'trinket-grid', 'trinket');
+
+</script>
 </body>
 </html>
