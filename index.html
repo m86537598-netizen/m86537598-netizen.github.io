@@ -1,102 +1,211 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" data-theme="green">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8">
 <title>Dandy World Skins Wiki</title>
 <link rel="icon" href="DWLOGO.png">
-<link rel="stylesheet" href="css/styles.css">
+<style>
+/* ================= THEMES ================= */
+:root{--bg:#0f2a1d;--panel:#163b2b;--text:#eafff3;--accent:#4cff9a}
+[data-theme="light"]{--bg:#fff;--panel:#eee;--text:#111;--accent:#2e7d32}
+[data-theme="dark"]{--bg:#111;--panel:#1c1c1c;--text:#eee;--accent:#7cffc4}
+[data-theme="gray"]{--bg:#2b2b2b;--panel:#3a3a3a;--text:#eee;--accent:#9ad}
+
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:var(--bg);color:var(--text)}
+header{display:flex;align-items:center;gap:10px;background:var(--panel);padding:10px}
+header img{height:40px}
+button{background:var(--accent);border:0;padding:6px 10px;border-radius:6px;cursor:pointer}
+.panel{background:var(--panel);padding:10px;border-radius:10px}
+.hidden{display:none}
+.sidebar{width:240px}
+main{flex:1}
+#wrapper{display:flex;height:100vh}
+a{color:var(--accent);cursor:pointer;text-decoration:none}
+.infobox{float:right;width:200px;background:#0003;padding:8px;border-radius:8px}
+blockquote{border-left:4px solid var(--accent);padding-left:8px}
+.comment{border-top:1px solid #ffffff22;padding:6px}
+.red{color:#ff5555}
+textarea,input{width:100%;padding:6px;border-radius:6px;border:0;margin-bottom:6px}
+.toolbar button{margin:2px}
+</style>
 </head>
+
 <body>
-<div id="app">
-  <header class="topbar">
-    <div class="brand"><img src="DWWIKILOGO.png" alt="logo" class="logo"> Dandy World Skins Wiki</div>
-    <div class="controls">
-      <select id="themeSelect"><option value="green">Green</option><option value="light">Light</option><option value="dark">Dark</option><option value="gray">Gray</option></select>
-      <button id="loginBtn">Login / Register</button>
-      <a href="editor.html" class="btn">Editor</a>
-    </div>
-  </header>
+<header>
+<img src="DWWIKILOGO.png">
+<button onclick="setTheme('green')">Green</button>
+<button onclick="setTheme('light')">Light</button>
+<button onclick="setTheme('dark')">Dark</button>
+<button onclick="setTheme('gray')">Gray</button>
+<button onclick="openLogin()">Login</button>
+<button onclick="openEditor()">Editor</button>
+<button id="adminBtn" class="hidden" onclick="openAdmin()">Admin</button>
+</header>
 
-  <aside class="sidebar panel">
-    <h3>Pages</h3>
-    <ul id="pagesList"></ul>
-    <hr>
-    <button id="reqBtn" class="wide">Request New Page</button>
-    <div id="userInfo" class="small"></div>
-  </aside>
-
-  <main class="content panel" id="contentPanel">
-    <div id="mainPage" class="page">
-      <h1>Welcome to Dandy World Skins Wiki</h1>
-      <p><strong>Community-driven skin repository.</strong></p>
-      <div class="templates">
-        <h4>Templates</h4>
-        <pre>{{Highlight|color=#ffff00|Text}}</pre>
-        <pre>{{Infobox|title=Name|image=/uploads/example.png|desc=Short}}</pre>
-        <pre>{{Quote|Text}}</pre>
-      </div>
-    </div>
-
-    <div id="pageView" class="page hidden">
-      <div id="pageHeader"></div>
-      <div id="pageContent"></div>
-      <section id="discussions">
-        <h3>Discussions</h3>
-        <div id="commentsList"></div>
-        <div id="commentForm">
-          <textarea id="commentText" placeholder="Add comment..."></textarea><br>
-          <button id="submitComment">Post</button>
-        </div>
-      </section>
-    </div>
-  </main>
-
-  <div id="modals">
-    <!-- Login / Register -->
-    <div class="modal hidden" id="authModal">
-      <h3>Login / Register</h3>
-      <div id="authForms">
-        <div id="loginForm">
-          <input id="loginUsername" placeholder="Username"><br>
-          <input id="loginPass" placeholder="Password" type="password"><br>
-          <input id="loginCode" placeholder="Admin code (optional)"><br>
-          <button id="doLogin">Login</button>
-        </div>
-        <hr>
-        <div id="regForm">
-          <input id="regUser" placeholder="Username"><br>
-          <input id="regEmail" placeholder="Email"><br>
-          <input id="regPass" placeholder="Password" type="password"><br>
-          <button id="doRegister">Register</button>
-        </div>
-      </div>
-      <button onclick="closeModal('authModal')">Close</button>
-    </div>
-
-    <!-- Request -->
-    <div class="modal hidden" id="requestModal">
-      <h3>Request a New Page</h3>
-      <input id="reqTitle" placeholder="Title"><br>
-      <input id="reqPurpose" placeholder="What is the page for?"><br>
-      <textarea id="reqContent" placeholder="Initial content (wikitext/HTML)"></textarea><br>
-      <div class="red" id="reqError"></div>
-      <button id="sendRequest">Send Request</button>
-      <button onclick="closeModal('requestModal')">Close</button>
-    </div>
-
-    <!-- Admin -->
-    <div class="modal hidden" id="adminModal">
-      <h3>Admin Panel</h3>
-      <div id="pendingList"></div>
-      <hr>
-      <div id="userAdmin"></div>
-      <button onclick="closeModal('adminModal')">Close</button>
-    </div>
-  </div>
-
+<div id="wrapper">
+<div class="sidebar panel">
+<h3>Pages</h3>
+<ul id="pageList"></ul>
+<button onclick="openRequest()">Request Page</button>
 </div>
 
-<script src="js/app.js"></script>
+<main class="panel">
+<div id="view"></div>
+
+<div id="comments" class="hidden">
+<h3>Discussions</h3>
+<div id="commentList"></div>
+<textarea id="commentText" placeholder="Comment"></textarea>
+<button onclick="postComment()">Post</button>
+</div>
+</main>
+</div>
+
+<!-- LOGIN -->
+<div id="login" class="panel hidden">
+<h3>Login / Register</h3>
+<input id="lu" placeholder="Username">
+<input id="le" placeholder="Email (register)">
+<input id="lp" placeholder="Password" type="password">
+<input id="lc" placeholder="Admin code (optional)">
+<button onclick="login()">Login / Register</button>
+</div>
+
+<!-- EDITOR -->
+<div id="editor" class="panel hidden">
+<h3>Editor</h3>
+<input id="etitle" placeholder="Page title">
+<input id="epurpose" placeholder="What is the page for?">
+<div class="toolbar">
+<button onclick="wrap(\"'''\",\"'''\")">Bold</button>
+<button onclick="wrap(\"''\",\"''\")">Italic</button>
+<button onclick="insert('{{Highlight|color=#ffff00|Text}}')">Highlight</button>
+<button onclick="insert('{{Quote|Text}}')">Quote</button>
+<button onclick="insert('{{Infobox|title=Name|image=URL|desc=Text}}')">Infobox</button>
+</div>
+<textarea id="econtent" rows="10"></textarea>
+<button onclick="preview()">Preview</button>
+<button onclick="sendRequest()">Request Page</button>
+<div id="emsg" class="red"></div>
+</div>
+
+<!-- ADMIN -->
+<div id="admin" class="panel hidden">
+<h3>Admin Panel</h3>
+<div id="pending"></div>
+</div>
+
+<script>
+/* ===== DATA (LOCALSTORAGE) ===== */
+const ADMIN_USER="BUBBLDEDS",ADMIN_PASS="ERG98UESG9",ADMIN_CODE="8723";
+let db=JSON.parse(localStorage.getItem("dwwiki"))||{users:[],pages:{},pending:{},comments:{}};
+let current=null, currentPage=null;
+
+/* ===== SAVE ===== */
+function save(){localStorage.setItem("dwwiki",JSON.stringify(db))}
+
+/* ===== THEME ===== */
+function setTheme(t){document.documentElement.setAttribute("data-theme",t)}
+
+/* ===== AUTH ===== */
+function openLogin(){login.classList.toggle("hidden")}
+function login(){
+ let u=lu.value,p=lp.value,c=lc.value;
+ let user=db.users.find(x=>x.u===u);
+ if(!user){
+  user={u,p,e:le.value,admin:(u===ADMIN_USER&&p===ADMIN_PASS&&c===ADMIN_CODE),ban:0};
+  db.users.push(user); save();
+ }
+ if(user.p!==p) return alert("Wrong password");
+ current=user;
+ adminBtn.classList.toggle("hidden",!user.admin);
+ login.classList.add("hidden");
+}
+
+/* ===== WIKITEXT ===== */
+function parse(t){
+ return t
+ .replace(/'''(.*?)'''/g,"<b>$1</b>")
+ .replace(/''(.*?)''/g,"<i>$1</i>")
+ .replace(/\{\{Highlight\|color=(.*?)\|(.*?)\}\}/g,'<span style="background:$1;color:#000">$2</span>')
+ .replace(/\{\{Quote\|(.*?)\}\}/g,"<blockquote>$1</blockquote>")
+ .replace(/\{\{Infobox\|title=(.*?)\|image=(.*?)\|desc=(.*?)\}\}/g,'<div class="infobox"><b>$1</b><img src="$2" style="width:100%"><p>$3</p></div>')
+}
+
+/* ===== PAGES ===== */
+function loadPages(){
+ pageList.innerHTML="";
+ for(let p in db.pages){
+  let li=document.createElement("li");
+  li.innerHTML=`<a onclick="viewPage('${p}')">${p}</a>`;
+  pageList.appendChild(li);
+ }
+}
+function viewPage(p){
+ currentPage=p;
+ view.innerHTML=parse(db.pages[p]);
+ comments.classList.remove("hidden");
+ loadComments();
+}
+loadPages();
+
+/* ===== COMMENTS ===== */
+function loadComments(){
+ commentList.innerHTML="";
+ (db.comments[currentPage]||[]).forEach(c=>{
+  let d=document.createElement("div");
+  d.className="comment";
+  d.textContent=c;
+  commentList.appendChild(d);
+ });
+}
+function postComment(){
+ if(!current||current.ban>Date.now()) return alert("Banned or not logged in");
+ db.comments[currentPage]=db.comments[currentPage]||[];
+ db.comments[currentPage].push(current.u+": "+commentText.value);
+ save(); commentText.value=""; loadComments();
+}
+
+/* ===== EDITOR ===== */
+function openEditor(){editor.classList.toggle("hidden")}
+function wrap(a,b){
+ let s=econtent.selectionStart,e=econtent.selectionEnd;
+ econtent.value=econtent.value.slice(0,s)+a+econtent.value.slice(s,e)+b+econtent.value.slice(e);
+}
+function insert(t){econtent.value+=t}
+function preview(){view.innerHTML=parse(econtent.value)}
+function sendRequest(){
+ if(!current) return alert("Login first");
+ if(db.pages[etitle.value]||db.pending[etitle.value]){
+  emsg.textContent="Page already made! Please request another."; return;
+ }
+ db.pending[etitle.value]=econtent.value; save();
+ emsg.textContent="Requested.";
+}
+
+/* ===== ADMIN ===== */
+function openAdmin(){
+ admin.classList.toggle("hidden");
+ pending.innerHTML="";
+ for(let p in db.pending){
+  pending.innerHTML+=`<div><b>${p}</b>
+  <button onclick="approve('${p}')">Approve</button></div>`;
+ }
+}
+function approve(p){
+ db.pages[p]=db.pending[p];
+ delete db.pending[p];
+ save(); loadPages(); openAdmin();
+}
+
+/* ===== MAIN PAGE ===== */
+if(Object.keys(db.pages).length===0){
+ db.pages["Main Page"]="'''Welcome to Dandy World Skins Wiki'''<br>{{Highlight|color=#4cff9a|Community Driven}}";
+ save();
+}
+loadPages();
+viewPage("Main Page");
+</script>
 </body>
 </html>
