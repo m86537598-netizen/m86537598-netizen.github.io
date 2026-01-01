@@ -1,840 +1,204 @@
-import React, { useState, useEffect } from 'react';
-import { Settings, LogIn, UserPlus, Edit, Save, X, Plus, AlertCircle, Menu, Search, Home, FileText, Shield, Trash2, Clock, Ban } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="en" data-theme="green">
+<head>
+<meta charset="UTF-8">
+<title>Dandy World Skins Wiki</title>
+<link rel="icon" href="DWLOGO.png">
+<style>
+/* ================= THEMES ================= */
+:root{
+  --bg:#0f2a1d;
+  --panel:#163b2b;
+  --text:#eafff3;
+  --accent:#4cff9a;
+}
+[data-theme="light"]{--bg:#fff;--panel:#eee;--text:#111;--accent:#2e7d32}
+[data-theme="dark"]{--bg:#121212;--panel:#1e1e1e;--text:#eee;--accent:#7cffc4}
+[data-theme="gray"]{--bg:#2b2b2b;--panel:#3a3a3a;--text:#f0f0f0;--accent:#9ad}
 
-const DandyWorldWiki = () => {
-  const [theme, setTheme] = useState('green');
-  const [currentUser, setCurrentUser] = useState(null);
-  const [currentPage, setCurrentPage] = useState('main');
-  const [showLogin, setShowLogin] = useState(false);
-  const [showRegister, setShowRegister] = useState(false);
-  const [showPageRequest, setShowPageRequest] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [editMode, setEditMode] = useState(false);
-  const [sourceMode, setSourceMode] = useState(false);
-  const [showAdminPanel, setShowAdminPanel] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [timeoutHours, setTimeoutHours] = useState('24');
-  
-  const [users, setUsers] = useState([]);
-  const [pages, setPages] = useState([{
-    id: 'main',
-    title: 'Main Page',
-    content: '== Welcome to Dandy World Skins Wiki ==\n\nThis is the main page of the Dandy World Skins Wiki!\n\n=== Getting Started ===\n* Browse existing pages\n* Create an account to request new pages\n* Explore different themes in settings\n\n=== Features ===\n* Wikitext support for formatting\n* Multiple color themes\n* User authentication system\n* Page request and approval system\n* Discussion on every page',
-    author: 'System',
-    created: new Date().toISOString()
-  }]);
-  const [pageRequests, setPageRequests] = useState([]);
-  const [comments, setComments] = useState({});
-  
-  const [loginForm, setLoginForm] = useState({ username: '', password: '', adminCode: '' });
-  const [registerForm, setRegisterForm] = useState({ username: '', email: '', password: '' });
-  const [requestForm, setRequestForm] = useState({ title: '', purpose: '' });
-  const [editContent, setEditContent] = useState('');
-  const [commentText, setCommentText] = useState('');
-  const [alert, setAlert] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;
+}
 
-  const themes = {
-    light: { bg: 'bg-gray-50', card: 'bg-white', text: 'text-gray-900', border: 'border-gray-300', accent: 'bg-blue-500', accentHover: 'hover:bg-blue-600' },
-    dark: { bg: 'bg-gray-900', card: 'bg-gray-800', text: 'text-gray-100', border: 'border-gray-700', accent: 'bg-blue-600', accentHover: 'hover:bg-blue-700' },
-    green: { bg: 'bg-green-50', card: 'bg-white', text: 'text-gray-900', border: 'border-green-300', accent: 'bg-green-600', accentHover: 'hover:bg-green-700' },
-    gray: { bg: 'bg-gray-100', card: 'bg-gray-200', text: 'text-gray-900', border: 'border-gray-400', accent: 'bg-gray-600', accentHover: 'hover:bg-gray-700' }
-  };
-  
-  const currentTheme = themes[theme];
+header{
+  background:var(--panel);
+  padding:10px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
 
-  const showAlert = (message, type) => {
-    setAlert({ message, type });
-    setTimeout(() => setAlert(null), 3000);
-  };
+header img{height:40px}
 
-  const isAdmin = (user) => {
-    return user && user.username === 'BUBBLDEDS' && user.isAdmin === true;
-  };
+button{
+  background:var(--accent);
+  border:none;
+  padding:6px 10px;
+  cursor:pointer;
+  border-radius:6px;
+}
 
-  const handleLogin = () => {
-    const user = users.find(u => u.username === loginForm.username && u.password === loginForm.password);
-    if (user) {
-      if (user.banned) {
-        showAlert('Your account has been banned.', 'error');
-        return;
-      }
-      if (loginForm.username === 'BUBBLDEDS' && loginForm.password === 'ERG98UESG9' && loginForm.adminCode === '8723') {
-        user.isAdmin = true;
-        showAlert('Admin login successful!', 'success');
-      } else if (loginForm.username === 'BUBBLDEDS' && loginForm.password === 'ERG98UESG9') {
-        showAlert('Admin verification code required.', 'error');
-        return;
-      }
-      setCurrentUser(user);
-      setShowLogin(false);
-      setLoginForm({ username: '', password: '', adminCode: '' });
-      showAlert('Login successful!', 'success');
-    } else {
-      showAlert('Invalid credentials.', 'error');
-    }
-  };
+.panel{
+  background:var(--panel);
+  margin:10px;
+  padding:10px;
+  border-radius:10px;
+}
 
-  const handleRegister = () => {
-    if (!registerForm.username || !registerForm.email || !registerForm.password) {
-      showAlert('All fields are required.', 'error');
-      return;
-    }
-    if (users.find(u => u.username === registerForm.username)) {
-      showAlert('Username already exists.', 'error');
-      return;
-    }
-    const newUser = { ...registerForm, created: new Date().toISOString(), banned: false, timeout: null };
-    setUsers([...users, newUser]);
-    setShowRegister(false);
-    setRegisterForm({ username: '', email: '', password: '' });
-    showAlert('Account created! Please log in.', 'success');
-  };
+.hidden{display:none}
+.red{color:#ff4c4c}
 
-  const handlePageRequest = () => {
-    if (!currentUser) {
-      showAlert('You must be logged in.', 'error');
-      return;
-    }
-    if (currentUser.banned) {
-      showAlert('You are banned and cannot request pages.', 'error');
-      return;
-    }
-    if (pages.find(p => p.title.toLowerCase() === requestForm.title.toLowerCase())) {
-      showAlert('Page already made! Please request another.', 'error');
-      return;
-    }
-    const request = {
-      id: Date.now(),
-      title: requestForm.title,
-      purpose: requestForm.purpose,
-      requester: currentUser.username,
-      created: new Date().toISOString()
-    };
-    setPageRequests([...pageRequests, request]);
-    setShowPageRequest(false);
-    setRequestForm({ title: '', purpose: '' });
-    showAlert('Page request submitted!', 'success');
-  };
+/* ================= WIKI CONTENT ================= */
+.infobox{
+  float:right;
+  width:200px;
+  background:#00000033;
+  padding:8px;
+  border-radius:8px;
+}
+.infobox img{width:100%}
 
-  const parseWikitext = (text) => {
-    let html = text;
-    html = html.replace(/====\s*(.+?)\s*====/g, '<h4 class="text-lg font-bold mt-4 mb-2">$1</h4>');
-    html = html.replace(/===\s*(.+?)\s*===/g, '<h3 class="text-xl font-bold mt-4 mb-2">$1</h3>');
-    html = html.replace(/==\s*(.+?)\s*==/g, '<h2 class="text-2xl font-bold mt-6 mb-3">$1</h2>');
-    html = html.replace(/'''(.+?)'''/g, '<strong>$1</strong>');
-    html = html.replace(/''(.+?)''/g, '<em>$1</em>');
-    html = html.replace(/\[\[(.+?)\]\]/g, '<a href="#" class="text-blue-600 underline">$1</a>');
-    html = html.replace(/^\*\s+(.+)$/gm, '<li class="ml-4">$1</li>');
-    html = html.replace(/(<li.*<\/li>)/s, '<ul class="list-disc">$1</ul>');
-    html = html.split('\n\n').map(p => p.trim() ? `<p class="mb-3">${p}</p>` : '').join('');
-    return html;
-  };
+blockquote{
+  border-left:4px solid var(--accent);
+  padding-left:8px;
+  opacity:.85;
+}
 
-  const handleSavePage = () => {
-    const updatedPages = pages.map(p => 
-      p.id === currentPage ? { ...p, content: editContent, lastEdit: new Date().toISOString() } : p
-    );
-    setPages(updatedPages);
-    setEditMode(false);
-    showAlert('Page saved!', 'success');
-  };
+.highlight{padding:2px 6px;border-radius:4px}
 
-  const handleAddComment = () => {
-    if (!currentUser) {
-      showAlert('You must be logged in to comment.', 'error');
-      return;
-    }
-    if (currentUser.banned) {
-      showAlert('You are banned from commenting.', 'error');
-      return;
-    }
-    if (currentUser.timeout && new Date(currentUser.timeout) > new Date()) {
-      showAlert('You are timed out from commenting.', 'error');
-      return;
-    }
-    const newComment = {
-      id: Date.now(),
-      author: currentUser.username,
-      text: commentText,
-      created: new Date().toISOString()
-    };
-    setComments({
-      ...comments,
-      [currentPage]: [...(comments[currentPage] || []), newComment]
-    });
-    setCommentText('');
-    showAlert('Comment added!', 'success');
-  };
+.comment{
+  border-top:1px solid #ffffff22;
+  padding:5px;
+}
+</style>
+</head>
 
-  const handleApproveRequest = (requestId) => {
-    const request = pageRequests.find(r => r.id === requestId);
-    const newPage = {
-      id: request.title.toLowerCase().replace(/\s+/g, '-'),
-      title: request.title,
-      content: `== ${request.title} ==\n\nThis page is about: ${request.purpose}\n\nContent coming soon...`,
-      author: request.requester,
-      created: new Date().toISOString()
-    };
-    setPages([...pages, newPage]);
-    setPageRequests(pageRequests.filter(r => r.id !== requestId));
-    showAlert('Page created and published!', 'success');
-  };
+<body>
 
-  const handleRejectRequest = (requestId) => {
-    setPageRequests(pageRequests.filter(r => r.id !== requestId));
-    showAlert('Request rejected.', 'success');
-  };
+<header>
+  <img src="DWWIKILOGO.png">
+  <button onclick="setTheme('green')">Green</button>
+  <button onclick="setTheme('light')">Light</button>
+  <button onclick="setTheme('dark')">Dark</button>
+  <button onclick="setTheme('gray')">Gray</button>
+  <button onclick="openLogin()">Login</button>
+</header>
 
-  const handleBanUser = (username) => {
-    setUsers(users.map(u => u.username === username ? { ...u, banned: true } : u));
-    if (currentUser && currentUser.username === username) {
-      setCurrentUser(null);
-    }
-    showAlert('User banned successfully.', 'success');
-  };
+<div class="panel" id="mainPage">
+<h1>Welcome to Dandy World Skins Wiki</h1>
+<p><b>Community-driven skin database.</b></p>
+<p class="highlight" style="background:#4cff9a;color:#000">Green theme default</p>
+<button onclick="openRequest()">Request New Page</button>
+</div>
 
-  const handleUnbanUser = (username) => {
-    setUsers(users.map(u => u.username === username ? { ...u, banned: false } : u));
-    showAlert('User unbanned successfully.', 'success');
-  };
+<div class="panel hidden" id="viewer"></div>
 
-  const handleTimeoutUser = (username, hours) => {
-    const timeout = new Date();
-    timeout.setHours(timeout.getHours() + parseInt(hours));
-    setUsers(users.map(u => u.username === username ? { ...u, timeout: timeout.toISOString() } : u));
-    showAlert(`User timed out for ${hours} hours.`, 'success');
-  };
+<div class="panel hidden" id="requestPanel">
+<h2>Request Page</h2>
+<input id="reqTitle" placeholder="Page title"><br><br>
+<textarea id="reqContent" rows="6" placeholder="Page content (wikitext / html)"></textarea><br>
+<button onclick="submitRequest()">Send Request</button>
+<p id="reqMsg" class="red"></p>
+</div>
 
-  const handleRemoveTimeout = (username) => {
-    setUsers(users.map(u => u.username === username ? { ...u, timeout: null } : u));
-    showAlert('Timeout removed.', 'success');
-  };
+<div class="panel hidden" id="loginPanel">
+<h2>Login</h2>
+<input id="user" placeholder="Username"><br><br>
+<input id="pass" placeholder="Password" type="password"><br><br>
+<input id="code" placeholder="Admin code (optional)"><br><br>
+<button onclick="login()">Login</button>
+</div>
 
-  const handleDeletePage = (pageId) => {
-    if (pageId === 'main') {
-      showAlert('Cannot delete main page.', 'error');
-      return;
-    }
-    setPages(pages.filter(p => p.id !== pageId));
-    setCurrentPage('main');
-    showAlert('Page deleted!', 'success');
-  };
+<div class="panel hidden" id="adminPanel">
+<h2>ADMIN PANEL</h2>
+<div id="pending"></div>
+</div>
 
-  const currentPageData = pages.find(p => p.id === currentPage);
-  const filteredPages = pages.filter(p => 
-    p.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+<script>
+/* ================= DATA ================= */
+const ADMIN_USER="BUBBLDEDS";
+const ADMIN_PASS="ERG98UESG9";
+const ADMIN_CODE="8723";
 
-  return (
-    <div className={`min-h-screen ${currentTheme.bg} ${currentTheme.text}`}>
-      <header className={`${currentTheme.card} ${currentTheme.border} border-b sticky top-0 z-50 shadow-md`}>
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-gray-200 rounded">
-              <Menu size={24} />
-            </button>
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-700 rounded flex items-center justify-center text-white font-bold text-lg shadow">
-                DW
-              </div>
-              <h1 className="text-xl font-bold">Dandy World Skins Wiki</h1>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            {currentUser && isAdmin(currentUser) && (
-              <button
-                onClick={() => setShowAdminPanel(true)}
-                className={`px-3 py-2 ${currentTheme.accent} text-white rounded ${currentTheme.accentHover} flex items-center gap-1`}
-              >
-                <Shield size={18} /> Admin
-              </button>
-            )}
-            <button
-              onClick={() => setShowSettings(true)}
-              className={`p-2 ${currentTheme.accent} text-white rounded ${currentTheme.accentHover}`}
-            >
-              <Settings size={20} />
-            </button>
-            {currentUser ? (
-              <div className="flex items-center gap-2">
-                <span className="font-medium px-3 py-2 bg-gray-200 rounded">{currentUser.username}</span>
-                <button
-                  onClick={() => setCurrentUser(null)}
-                  className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <>
-                <button
-                  onClick={() => setShowLogin(true)}
-                  className={`px-3 py-2 ${currentTheme.accent} text-white rounded ${currentTheme.accentHover} flex items-center gap-1`}
-                >
-                  <LogIn size={18} /> Login
-                </button>
-                <button
-                  onClick={() => setShowRegister(true)}
-                  className={`px-3 py-2 ${currentTheme.card} ${currentTheme.border} border rounded hover:bg-gray-100 flex items-center gap-1`}
-                >
-                  <UserPlus size={18} /> Register
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
+let currentUser=null;
+let pages={};
+let pending={};
 
-      {alert && (
-        <div className={`fixed top-20 right-4 z-50 px-6 py-4 rounded-lg shadow-2xl ${
-          alert.type === 'error' ? 'bg-red-500' : 'bg-green-500'
-        } text-white flex items-center gap-3 animate-slide-in`}>
-          <AlertCircle size={24} />
-          <span className="font-medium">{alert.message}</span>
-        </div>
-      )}
+/* ================= THEME ================= */
+function setTheme(t){
+ document.documentElement.setAttribute("data-theme",t);
+}
 
-      <div className="flex">
-        {sidebarOpen && (
-          <aside className={`w-64 ${currentTheme.card} ${currentTheme.border} border-r min-h-screen p-4 shadow-lg`}>
-            <div className="mb-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
-                <input
-                  type="text"
-                  placeholder="Search pages..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className={`w-full pl-10 pr-3 py-2 ${currentTheme.card} ${currentTheme.border} border rounded focus:outline-none focus:ring-2 focus:ring-green-500`}
-                />
-              </div>
-            </div>
-            
-            <div className="mb-4">
-              <button
-                onClick={() => {
-                  setCurrentPage('main');
-                  setEditMode(false);
-                  setSourceMode(false);
-                }}
-                className={`w-full text-left px-3 py-2 rounded flex items-center gap-2 transition ${
-                  currentPage === 'main' ? currentTheme.accent + ' text-white' : 'hover:bg-gray-100'
-                }`}
-              >
-                <Home size={18} /> Main Page
-              </button>
-            </div>
+/* ================= AUTH ================= */
+function openLogin(){
+ document.getElementById("loginPanel").classList.remove("hidden");
+}
 
-            {currentUser && (
-              <button
-                onClick={() => setShowPageRequest(true)}
-                className={`w-full mb-4 px-3 py-2 ${currentTheme.accent} text-white rounded ${currentTheme.accentHover} flex items-center gap-2 justify-center shadow`}
-              >
-                <Plus size={18} /> Request Page
-              </button>
-            )}
+function login(){
+ let u=user.value,p=pass.value,c=code.value;
+ currentUser={name:u,admin:(u===ADMIN_USER && p===ADMIN_PASS && c===ADMIN_CODE)};
+ document.getElementById("loginPanel").classList.add("hidden");
+ if(currentUser.admin) document.getElementById("adminPanel").classList.remove("hidden");
+}
 
-            <div className="space-y-1">
-              <h3 className="font-bold mb-2 text-sm uppercase tracking-wide opacity-70">All Pages</h3>
-              <div className="max-h-[calc(100vh-300px)] overflow-y-auto">
-                {filteredPages.map(page => (
-                  <button
-                    key={page.id}
-                    onClick={() => {
-                      setCurrentPage(page.id);
-                      setEditMode(false);
-                      setSourceMode(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded flex items-center gap-2 transition text-sm ${
-                      currentPage === page.id ? currentTheme.accent + ' text-white' : 'hover:bg-gray-100'
-                    }`}
-                  >
-                    <FileText size={14} /> {page.title}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </aside>
-        )}
+/* ================= WIKITEXT PARSER ================= */
+function parseWiki(t){
+ t=t.replace(/'''(.*?)'''/g,"<b>$1</b>");
+ t=t.replace(/''(.*?)''/g,"<i>$1</i>");
+ t=t.replace(/==(.+?)==/g,"<h2>$1</h2>");
+ t=t.replace(/\{\{Highlight\|color=(.*?)\|(.*?)\}\}/g,'<span class="highlight" style="background:$1">$2</span>');
+ t=t.replace(/\{\{Quote\|(.*?)\}\}/g,"<blockquote>$1</blockquote>");
+ t=t.replace(/\{\{Infobox\|title=(.*?)\|image=(.*?)\|desc=(.*?)\}\}/g,
+  '<div class="infobox"><b>$1</b><img src=\"$2\"><p>$3</p></div>');
+ return t;
+}
 
-        <main className="flex-1 p-6 max-w-5xl mx-auto">
-          {currentPageData && (
-            <div className={`${currentTheme.card} rounded-lg shadow-xl p-8`}>
-              <div className="flex justify-between items-start mb-6">
-                <div>
-                  <h1 className="text-4xl font-bold mb-2">{currentPageData.title}</h1>
-                  <p className="text-sm opacity-60">
-                    Created by {currentPageData.author} on {new Date(currentPageData.created).toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  {currentUser && (isAdmin(currentUser) || currentUser.username === currentPageData.author) && (
-                    <>
-                      <button
-                        onClick={() => {
-                          if (editMode) {
-                            handleSavePage();
-                          } else {
-                            setEditContent(currentPageData.content);
-                            setEditMode(true);
-                            setSourceMode(false);
-                          }
-                        }}
-                        className={`px-4 py-2 ${editMode ? 'bg-green-500 hover:bg-green-600' : currentTheme.accent + ' ' + currentTheme.accentHover} text-white rounded flex items-center gap-2 shadow`}
-                      >
-                        {editMode ? <><Save size={18} /> Save</> : <><Edit size={18} /> Edit</>}
-                      </button>
-                      <button
-                        onClick={() => {
-                          setSourceMode(!sourceMode);
-                          setEditMode(false);
-                        }}
-                        className={`px-4 py-2 ${currentTheme.card} ${currentTheme.border} border rounded hover:bg-gray-100`}
-                      >
-                        {sourceMode ? 'View' : 'Source'}
-                      </button>
-                      {isAdmin(currentUser) && currentPageData.id !== 'main' && (
-                        <button
-                          onClick={() => {
-                            if (confirm('Are you sure you want to delete this page?')) {
-                              handleDeletePage(currentPageData.id);
-                            }
-                          }}
-                          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 flex items-center gap-2 shadow"
-                        >
-                          <Trash2 size={18} /> Delete
-                        </button>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
+/* ================= PAGE REQUEST ================= */
+function openRequest(){
+ if(!currentUser){alert("Login required");return;}
+ document.getElementById("requestPanel").classList.remove("hidden");
+}
 
-              {editMode ? (
-                <div>
-                  <textarea
-                    value={editContent}
-                    onChange={(e) => setEditContent(e.target.value)}
-                    className={`w-full h-96 p-4 ${currentTheme.card} ${currentTheme.border} border rounded font-mono text-sm focus:outline-none focus:ring-2 focus:ring-green-500`}
-                  />
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <span className="text-sm font-bold opacity-70">Quick Insert:</span>
-                    <button 
-                      onClick={() => setEditContent(editContent + '\n== Heading ==\n')}
-                      className="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-700"
-                    >
-                      Heading
-                    </button>
-                    <button 
-                      onClick={() => setEditContent(editContent + "'''Bold Text'''")}
-                      className="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-700"
-                    >
-                      Bold
-                    </button>
-                    <button 
-                      onClick={() => setEditContent(editContent + "''Italic Text''")}
-                      className="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-700"
-                    >
-                      Italic
-                    </button>
-                    <button 
-                      onClick={() => setEditContent(editContent + '[[Page Link]]')}
-                      className="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-700"
-                    >
-                      Link
-                    </button>
-                    <button 
-                      onClick={() => setEditContent(editContent + '\n* List item')}
-                      className="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-700"
-                    >
-                      List
-                    </button>
-                  </div>
-                </div>
-              ) : sourceMode ? (
-                <div>
-                  <pre className={`p-4 ${currentTheme.bg} rounded overflow-x-auto font-mono text-sm`}>
-                    <code>{currentPageData.content}</code>
-                  </pre>
-                </div>
-              ) : (
-                <div 
-                  className="prose prose-lg max-w-none"
-                  dangerouslySetInnerHTML={{ __html: parseWikitext(currentPageData.content) }}
-                />
-              )}
+function submitRequest(){
+ let t=reqTitle.value;
+ if(pages[t]||pending[t]){
+  reqMsg.textContent="Page already made! Please request another.";
+  return;
+ }
+ pending[t]=reqContent.value;
+ reqMsg.textContent="Request sent.";
+ updateAdmin();
+}
 
-              <div className="mt-16 pt-8 border-t-2">
-                <h2 className="text-3xl font-bold mb-6 flex items-center gap-2">
-                  <FileText size={28} /> Discussions
-                </h2>
-                
-                {currentUser && !currentUser.banned && !(currentUser.timeout && new Date(currentUser.timeout) > new Date()) ? (
-                  <div className="mb-8">
-                    <textarea
-                      value={commentText}
-                      onChange={(e) => setCommentText(e.target.value)}
-                      placeholder="Share your thoughts..."
-                      className={`w-full p-4 ${currentTheme.card} ${currentTheme.border} border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
-                      rows="4"
-                    />
-                    <button
-                      onClick={handleAddComment}
-                      className={`mt-3 px-6 py-3 ${currentTheme.accent} text-white rounded-lg ${currentTheme.accentHover} font-medium shadow`}
-                    >
-                      Post Comment
-                    </button>
-                  </div>
-                ) : !currentUser ? (
-                  <p className="mb-8 text-gray-500">Please log in to comment.</p>
-                ) : (
-                  <p className="mb-8 text-red-500">You cannot comment at this time.</p>
-                )}
+/* ================= ADMIN ================= */
+function updateAdmin(){
+ let box=document.getElementById("pending");
+ box.innerHTML="";
+ for(let p in pending){
+  box.innerHTML+=`<div>
+   <b>${p}</b>
+   <button onclick="approve('${p}')">Approve</button>
+  </div>`;
+ }
+}
 
-                <div className="space-y-4">
-                  {(comments[currentPage] && comments[currentPage].length > 0) ? (
-                    comments[currentPage].map(comment => (
-                      <div key={comment.id} className={`p-5 ${currentTheme.bg} rounded-lg shadow`}>
-                        <div className="flex justify-between items-start mb-3">
-                          <span className="font-bold text-lg">{comment.author}</span>
-                          <span className="text-sm opacity-60">
-                            {new Date(comment.created).toLocaleString()}
-                          </span>
-                        </div>
-                        <p className="text-base leading-relaxed">{comment.text}</p>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-gray-500 text-center py-8">No comments yet. Be the first to comment!</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-        </main>
-      </div>
+function approve(p){
+ pages[p]=pending[p];
+ delete pending[p];
+ viewPage(p);
+ updateAdmin();
+}
 
-      {showLogin && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-          <div className={`${currentTheme.card} rounded-xl p-8 w-full max-w-md shadow-2xl`}>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-3xl font-bold">Login</h2>
-              <button onClick={() => setShowLogin(false)} className="hover:bg-gray-200 p-2 rounded"><X size={24} /></button>
-            </div>
-            <input
-              type="text"
-              placeholder="Username"
-              value={loginForm.username}
-              onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
-              className={`w-full p-3 mb-4 ${currentTheme.card} ${currentTheme.border} border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={loginForm.password}
-              onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-              className={`w-full p-3 mb-4 ${currentTheme.card} ${currentTheme.border} border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
-            />
-            {loginForm.username === 'BUBBLDEDS' && (
-              <input
-                type="text"
-                placeholder="Admin Code (required for admin access)"
-                value={loginForm.adminCode}
-                onChange={(e) => setLoginForm({ ...loginForm, adminCode: e.target.value })}
-                className={`w-full p-3 mb-4 ${currentTheme.card} ${currentTheme.border} border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
-              />
-            )}
-            <button
-              onClick={handleLogin}
-              className={`w-full py-3 ${currentTheme.accent} text-white rounded-lg ${currentTheme.accentHover} font-medium text-lg shadow-lg`}
-            >
-              Login
-            </button>
-          </div>
-        </div>
-      )}
+/* ================= VIEW ================= */
+function viewPage(p){
+ let v=document.getElementById("viewer");
+ v.innerHTML=parseWiki(pages[p]);
+ v.classList.remove("hidden");
+}
+</script>
 
-      {showRegister && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-          <div className={`${currentTheme.card} rounded-xl p-8 w-full max-w-md shadow-2xl`}>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-3xl font-bold">Register</h2>
-              <button onClick={() => setShowRegister(false)} className="hover:bg-gray-200 p-2 rounded"><X size={24} /></button>
-            </div>
-            <input
-              type="text"
-              placeholder="Username"
-              value={registerForm.username}
-              onChange={(e) => setRegisterForm({ ...registerForm, username: e.target.value })}
-              className={`w-full p-3 mb-4 ${currentTheme.card} ${currentTheme.border} border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
-            />
-            <input
-              type="email"
-              placeholder="Email"
-              value={registerForm.email}
-              onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
-              className={`w-full p-3 mb-4 ${currentTheme.card} ${currentTheme.border} border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={registerForm.password}
-              onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
-              className={`w-full p-3 mb-4 ${currentTheme.card} ${currentTheme.border} border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
-            />
-            <button
-              onClick={handleRegister}
-              className={`w-full py-3 ${currentTheme.accent} text-white rounded-lg ${currentTheme.accentHover} font-medium text-lg shadow-lg`}
-            >
-              Create Account
-            </button>
-          </div>
-        </div>
-      )}
-
-      {showPageRequest && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-          <div className={`${currentTheme.card} rounded-xl p-8 w-full max-w-md shadow-2xl`}>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-3xl font-bold">Request New Page</h2>
-              <button onClick={() => setShowPageRequest(false)} className="hover:bg-gray-200 p-2 rounded"><X size={24} /></button>
-            </div>
-            <input
-              type="text"
-              placeholder="Page Title"
-              value={requestForm.title}
-              onChange={(e) => setRequestForm({ ...requestForm, title: e.target.value })}
-              className={`w-full p-3 mb-4 ${currentTheme.card} ${currentTheme.border} border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
-            />
-            <textarea
-              placeholder="What is this page for? (Purpose/Description)"
-              value={requestForm.purpose}
-              onChange={(e) => setRequestForm({ ...requestForm, purpose: e.target.value })}
-              className={`w-full p-3 mb-4 ${currentTheme.card} ${currentTheme.border} border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500`}
-              rows="5"
-            />
-            <button
-              onClick={handlePageRequest}
-              className={`w-full py-3 ${currentTheme.accent} text-white rounded-lg ${currentTheme.accentHover} font-medium text-lg shadow-lg`}
-            >
-              Submit Request
-            </button>
-          </div>
-        </div>
-      )}
-
-      {showSettings && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-          <div className={`${currentTheme.card} rounded-xl p-8 w-full max-w-md shadow-2xl`}>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-3xl font-bold">Settings</h2>
-              <button onClick={() => setShowSettings(false)} className="hover:bg-gray-200 p-2 rounded"><X size={24} /></button>
-            </div>
-            <div className="space-y-4">
-              <h3 className="font-bold text-xl mb-3">Choose Theme</h3>
-              {Object.keys(themes).map(t => (
-                <button
-                  key={t}
-                  onClick={() => setTheme(t)}
-                  className={`w-full p-4 rounded-lg font-medium text-lg transition ${
-                    theme === t 
-                      ? currentTheme.accent + ' text-white shadow-lg scale-105' 
-                      : currentTheme.border + ' border hover:bg-gray-100'
-                  }`}
-                >
-                  {t.charAt(0).toUpperCase() + t.slice(1)} Theme
-                  {t === 'green' && ' (Default)'}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showAdminPanel && isAdmin(currentUser) && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className={`${currentTheme.card} rounded-xl p-8 w-full max-w-4xl my-8 shadow-2xl max-h-[90vh] overflow-y-auto`}>
-            <div className="flex justify-between items-center mb-8 sticky top-0 bg-inherit pb-4 border-b">
-              <h2 className="text-4xl font-bold flex items-center gap-3">
-                <Shield size={36} className="text-green-600" />
-                Admin Control Panel
-              </h2>
-              <button onClick={() => setShowAdminPanel(false)} className="hover:bg-gray-200 p-2 rounded"><X size={28} /></button>
-            </div>
-
-            <div className="space-y-8">
-              <div>
-                <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                  <FileText size={24} />
-                  Pending Page Requests ({pageRequests.length})
-                </h3>
-                {pageRequests.length === 0 ? (
-                  <div className="text-center py-12 bg-gray-100 rounded-lg">
-                    <p className="text-gray-500 text-lg">No pending page requests</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {pageRequests.map(req => (
-                      <div key={req.id} className={`p-6 ${currentTheme.bg} rounded-lg shadow border-l-4 border-blue-500`}>
-                        <div className="flex justify-between items-start mb-3">
-                          <h4 className="font-bold text-xl">{req.title}</h4>
-                          <span className="text-sm opacity-60">{new Date(req.created).toLocaleDateString()}</span>
-                        </div>
-                        <p className="text-sm opacity-70 mb-2">Requested by: <strong>{req.requester}</strong></p>
-                        <p className="mb-4 bg-white p-3 rounded">{req.purpose}</p>
-                        <div className="flex gap-3">
-                          <button
-                            onClick={() => handleApproveRequest(req.id)}
-                            className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium shadow flex items-center gap-2"
-                          >
-                            <Check size={18} /> Approve & Publish
-                          </button>
-                          <button
-                            onClick={() => handleRejectRequest(req.id)}
-                            className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 font-medium shadow flex items-center gap-2"
-                          >
-                            <X size={18} /> Reject
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                  <UserPlus size={24} />
-                  User Management ({users.length} users)
-                </h3>
-                {users.length === 0 ? (
-                  <div className="text-center py-12 bg-gray-100 rounded-lg">
-                    <p className="text-gray-500 text-lg">No registered users</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {users.map(user => {
-                      const isTimedOut = user.timeout && new Date(user.timeout) > new Date();
-                      return (
-                        <div key={user.username} className={`p-6 ${currentTheme.bg} rounded-lg shadow ${user.banned ? 'border-l-4 border-red-500' : isTimedOut ? 'border-l-4 border-orange-500' : ''}`}>
-                          <div className="flex justify-between items-start mb-3">
-                            <div>
-                              <h4 className="font-bold text-xl flex items-center gap-2">
-                                {user.username}
-                                {user.banned && <span className="text-sm bg-red-500 text-white px-2 py-1 rounded">BANNED</span>}
-                                {isTimedOut && <span className="text-sm bg-orange-500 text-white px-2 py-1 rounded">TIMED OUT</span>}
-                              </h4>
-                              <p className="text-sm opacity-60">{user.email}</p>
-                              <p className="text-xs opacity-50 mt-1">Joined: {new Date(user.created).toLocaleDateString()}</p>
-                              {isTimedOut && (
-                                <p className="text-sm text-orange-600 mt-2">
-                                  Timeout expires: {new Date(user.timeout).toLocaleString()}
-                                </p>
-                              )}
-                            </div>
-                            <div className="flex flex-col gap-2">
-                              {user.banned ? (
-                                <button
-                                  onClick={() => handleUnbanUser(user.username)}
-                                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium shadow flex items-center gap-1"
-                                >
-                                  <Check size={16} /> Unban
-                                </button>
-                              ) : (
-                                <button
-                                  onClick={() => {
-                                    if (confirm(`Are you sure you want to ban ${user.username}?`)) {
-                                      handleBanUser(user.username);
-                                    }
-                                  }}
-                                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm font-medium shadow flex items-center gap-1"
-                                >
-                                  <Ban size={16} /> Ban User
-                                </button>
-                              )}
-                              {isTimedOut ? (
-                                <button
-                                  onClick={() => handleRemoveTimeout(user.username)}
-                                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm font-medium shadow flex items-center gap-1"
-                                >
-                                  <Check size={16} /> Remove Timeout
-                                </button>
-                              ) : (
-                                <div className="flex gap-2">
-                                  <button
-                                    onClick={() => handleTimeoutUser(user.username, '24')}
-                                    className="px-3 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 text-sm font-medium shadow flex items-center gap-1"
-                                  >
-                                    <Clock size={16} /> 24h
-                                  </button>
-                                  <button
-                                    onClick={() => handleTimeoutUser(user.username, '72')}
-                                    className="px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 text-sm font-medium shadow flex items-center gap-1"
-                                  >
-                                    <Clock size={16} /> 72h
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                  <FileText size={24} />
-                  Page Management ({pages.length} pages)
-                </h3>
-                <div className="space-y-3">
-                  {pages.map(page => (
-                    <div key={page.id} className={`p-4 ${currentTheme.bg} rounded-lg shadow flex justify-between items-center`}>
-                      <div>
-                        <h4 className="font-bold text-lg">{page.title}</h4>
-                        <p className="text-sm opacity-60">By: {page.author} | Created: {new Date(page.created).toLocaleDateString()}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => {
-                            setCurrentPage(page.id);
-                            setEditMode(true);
-                            setEditContent(page.content);
-                            setShowAdminPanel(false);
-                          }}
-                          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm font-medium shadow flex items-center gap-1"
-                        >
-                          <Edit size={16} /> Edit
-                        </button>
-                        {page.id !== 'main' && (
-                          <button
-                            onClick={() => {
-                              if (confirm(`Delete "${page.title}"?`)) {
-                                handleDeletePage(page.id);
-                              }
-                            }}
-                            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm font-medium shadow flex items-center gap-1"
-                          >
-                            <Trash2 size={16} /> Delete
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default DandyWorldWiki;
-              
+</body>
+</html>
