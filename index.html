@@ -1,204 +1,102 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" data-theme="green">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Dandy World Skins Wiki</title>
 <link rel="icon" href="DWLOGO.png">
-<style>
-/* ================= THEMES ================= */
-:root{
-  --bg:#0f2a1d;
-  --panel:#163b2b;
-  --text:#eafff3;
-  --accent:#4cff9a;
-}
-[data-theme="light"]{--bg:#fff;--panel:#eee;--text:#111;--accent:#2e7d32}
-[data-theme="dark"]{--bg:#121212;--panel:#1e1e1e;--text:#eee;--accent:#7cffc4}
-[data-theme="gray"]{--bg:#2b2b2b;--panel:#3a3a3a;--text:#f0f0f0;--accent:#9ad}
-
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  font-family:Arial,Helvetica,sans-serif;
-}
-
-header{
-  background:var(--panel);
-  padding:10px;
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-header img{height:40px}
-
-button{
-  background:var(--accent);
-  border:none;
-  padding:6px 10px;
-  cursor:pointer;
-  border-radius:6px;
-}
-
-.panel{
-  background:var(--panel);
-  margin:10px;
-  padding:10px;
-  border-radius:10px;
-}
-
-.hidden{display:none}
-.red{color:#ff4c4c}
-
-/* ================= WIKI CONTENT ================= */
-.infobox{
-  float:right;
-  width:200px;
-  background:#00000033;
-  padding:8px;
-  border-radius:8px;
-}
-.infobox img{width:100%}
-
-blockquote{
-  border-left:4px solid var(--accent);
-  padding-left:8px;
-  opacity:.85;
-}
-
-.highlight{padding:2px 6px;border-radius:4px}
-
-.comment{
-  border-top:1px solid #ffffff22;
-  padding:5px;
-}
-</style>
+<link rel="stylesheet" href="css/styles.css">
 </head>
-
 <body>
+<div id="app">
+  <header class="topbar">
+    <div class="brand"><img src="DWWIKILOGO.png" alt="logo" class="logo"> Dandy World Skins Wiki</div>
+    <div class="controls">
+      <select id="themeSelect"><option value="green">Green</option><option value="light">Light</option><option value="dark">Dark</option><option value="gray">Gray</option></select>
+      <button id="loginBtn">Login / Register</button>
+      <a href="editor.html" class="btn">Editor</a>
+    </div>
+  </header>
 
-<header>
-  <img src="DWWIKILOGO.png">
-  <button onclick="setTheme('green')">Green</button>
-  <button onclick="setTheme('light')">Light</button>
-  <button onclick="setTheme('dark')">Dark</button>
-  <button onclick="setTheme('gray')">Gray</button>
-  <button onclick="openLogin()">Login</button>
-</header>
+  <aside class="sidebar panel">
+    <h3>Pages</h3>
+    <ul id="pagesList"></ul>
+    <hr>
+    <button id="reqBtn" class="wide">Request New Page</button>
+    <div id="userInfo" class="small"></div>
+  </aside>
 
-<div class="panel" id="mainPage">
-<h1>Welcome to Dandy World Skins Wiki</h1>
-<p><b>Community-driven skin database.</b></p>
-<p class="highlight" style="background:#4cff9a;color:#000">Green theme default</p>
-<button onclick="openRequest()">Request New Page</button>
+  <main class="content panel" id="contentPanel">
+    <div id="mainPage" class="page">
+      <h1>Welcome to Dandy World Skins Wiki</h1>
+      <p><strong>Community-driven skin repository.</strong></p>
+      <div class="templates">
+        <h4>Templates</h4>
+        <pre>{{Highlight|color=#ffff00|Text}}</pre>
+        <pre>{{Infobox|title=Name|image=/uploads/example.png|desc=Short}}</pre>
+        <pre>{{Quote|Text}}</pre>
+      </div>
+    </div>
+
+    <div id="pageView" class="page hidden">
+      <div id="pageHeader"></div>
+      <div id="pageContent"></div>
+      <section id="discussions">
+        <h3>Discussions</h3>
+        <div id="commentsList"></div>
+        <div id="commentForm">
+          <textarea id="commentText" placeholder="Add comment..."></textarea><br>
+          <button id="submitComment">Post</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div id="modals">
+    <!-- Login / Register -->
+    <div class="modal hidden" id="authModal">
+      <h3>Login / Register</h3>
+      <div id="authForms">
+        <div id="loginForm">
+          <input id="loginUsername" placeholder="Username"><br>
+          <input id="loginPass" placeholder="Password" type="password"><br>
+          <input id="loginCode" placeholder="Admin code (optional)"><br>
+          <button id="doLogin">Login</button>
+        </div>
+        <hr>
+        <div id="regForm">
+          <input id="regUser" placeholder="Username"><br>
+          <input id="regEmail" placeholder="Email"><br>
+          <input id="regPass" placeholder="Password" type="password"><br>
+          <button id="doRegister">Register</button>
+        </div>
+      </div>
+      <button onclick="closeModal('authModal')">Close</button>
+    </div>
+
+    <!-- Request -->
+    <div class="modal hidden" id="requestModal">
+      <h3>Request a New Page</h3>
+      <input id="reqTitle" placeholder="Title"><br>
+      <input id="reqPurpose" placeholder="What is the page for?"><br>
+      <textarea id="reqContent" placeholder="Initial content (wikitext/HTML)"></textarea><br>
+      <div class="red" id="reqError"></div>
+      <button id="sendRequest">Send Request</button>
+      <button onclick="closeModal('requestModal')">Close</button>
+    </div>
+
+    <!-- Admin -->
+    <div class="modal hidden" id="adminModal">
+      <h3>Admin Panel</h3>
+      <div id="pendingList"></div>
+      <hr>
+      <div id="userAdmin"></div>
+      <button onclick="closeModal('adminModal')">Close</button>
+    </div>
+  </div>
+
 </div>
 
-<div class="panel hidden" id="viewer"></div>
-
-<div class="panel hidden" id="requestPanel">
-<h2>Request Page</h2>
-<input id="reqTitle" placeholder="Page title"><br><br>
-<textarea id="reqContent" rows="6" placeholder="Page content (wikitext / html)"></textarea><br>
-<button onclick="submitRequest()">Send Request</button>
-<p id="reqMsg" class="red"></p>
-</div>
-
-<div class="panel hidden" id="loginPanel">
-<h2>Login</h2>
-<input id="user" placeholder="Username"><br><br>
-<input id="pass" placeholder="Password" type="password"><br><br>
-<input id="code" placeholder="Admin code (optional)"><br><br>
-<button onclick="login()">Login</button>
-</div>
-
-<div class="panel hidden" id="adminPanel">
-<h2>ADMIN PANEL</h2>
-<div id="pending"></div>
-</div>
-
-<script>
-/* ================= DATA ================= */
-const ADMIN_USER="BUBBLDEDS";
-const ADMIN_PASS="ERG98UESG9";
-const ADMIN_CODE="8723";
-
-let currentUser=null;
-let pages={};
-let pending={};
-
-/* ================= THEME ================= */
-function setTheme(t){
- document.documentElement.setAttribute("data-theme",t);
-}
-
-/* ================= AUTH ================= */
-function openLogin(){
- document.getElementById("loginPanel").classList.remove("hidden");
-}
-
-function login(){
- let u=user.value,p=pass.value,c=code.value;
- currentUser={name:u,admin:(u===ADMIN_USER && p===ADMIN_PASS && c===ADMIN_CODE)};
- document.getElementById("loginPanel").classList.add("hidden");
- if(currentUser.admin) document.getElementById("adminPanel").classList.remove("hidden");
-}
-
-/* ================= WIKITEXT PARSER ================= */
-function parseWiki(t){
- t=t.replace(/'''(.*?)'''/g,"<b>$1</b>");
- t=t.replace(/''(.*?)''/g,"<i>$1</i>");
- t=t.replace(/==(.+?)==/g,"<h2>$1</h2>");
- t=t.replace(/\{\{Highlight\|color=(.*?)\|(.*?)\}\}/g,'<span class="highlight" style="background:$1">$2</span>');
- t=t.replace(/\{\{Quote\|(.*?)\}\}/g,"<blockquote>$1</blockquote>");
- t=t.replace(/\{\{Infobox\|title=(.*?)\|image=(.*?)\|desc=(.*?)\}\}/g,
-  '<div class="infobox"><b>$1</b><img src=\"$2\"><p>$3</p></div>');
- return t;
-}
-
-/* ================= PAGE REQUEST ================= */
-function openRequest(){
- if(!currentUser){alert("Login required");return;}
- document.getElementById("requestPanel").classList.remove("hidden");
-}
-
-function submitRequest(){
- let t=reqTitle.value;
- if(pages[t]||pending[t]){
-  reqMsg.textContent="Page already made! Please request another.";
-  return;
- }
- pending[t]=reqContent.value;
- reqMsg.textContent="Request sent.";
- updateAdmin();
-}
-
-/* ================= ADMIN ================= */
-function updateAdmin(){
- let box=document.getElementById("pending");
- box.innerHTML="";
- for(let p in pending){
-  box.innerHTML+=`<div>
-   <b>${p}</b>
-   <button onclick="approve('${p}')">Approve</button>
-  </div>`;
- }
-}
-
-function approve(p){
- pages[p]=pending[p];
- delete pending[p];
- viewPage(p);
- updateAdmin();
-}
-
-/* ================= VIEW ================= */
-function viewPage(p){
- let v=document.getElementById("viewer");
- v.innerHTML=parseWiki(pages[p]);
- v.classList.remove("hidden");
-}
-</script>
-
+<script src="js/app.js"></script>
 </body>
 </html>
