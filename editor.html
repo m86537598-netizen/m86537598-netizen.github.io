@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en" data-theme="green">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>Editor - Dandy World Skins Wiki</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<header class="topbar"><a href="./">← Back</a> Editor</header>
+
+<main class="panel editor">
+  <div class="row">
+    <div class="col">
+      <input id="title" placeholder="Page title"><br>
+      <input id="purpose" placeholder="What is the page for?"><br>
+      <div class="toolbar">
+        <button onclick="insertFormat(''''',''''' )">Bold</button>
+        <button onclick="insertFormat('''','''')">Bold (alt)</button>
+        <button onclick="insertFormat('''','''')">---</button>
+        <button onclick="insertAtCursor('{{Highlight|color=#ffff00|','}}')">Highlight</button>
+        <button onclick="insertAtCursor('{{Quote|','}}')">Quote</button>
+        <button onclick="insertAtCursor('{{Infobox|title=My|image=/uploads/example.png|desc=','}}')">Infobox</button>
+        <button onclick="insertAtCursor('[[','']]')">Link</button>
+      </div>
+      <textarea id="source" rows="18" placeholder="Wikitext or HTML"></textarea>
+      <br>
+      <input type="file" id="imgFile"><button id="uploadBtn">Upload Image</button>
+      <div class="small">Image transform: scale <input id="imgScale" type="range" min="0.1" max="3" step="0.05" value="1"> left <input id="imgLeft" type="range" min="-200" max="200" value="0"></div>
+      <button id="previewBtn">Preview</button>
+      <button id="requestBtn">Request Page</button>
+      <div id="editorMsg" class="red"></div>
+    </div>
+
+    <div class="col">
+      <h3>Preview</h3>
+      <div id="preview" class="panel"></div>
+    </div>
+  </div>
+</main>
+
+<script src="js/app.js"></script>
+<script>
+const src = document.getElementById('source');
+const preview = document.getElementById('preview');
+const imgFile = document.getElementById('imgFile');
+const uploadBtn = document.getElementById('uploadBtn');
+document.getElementById('previewBtn').onclick = ()=> {
+  preview.innerHTML = parseWiki(src.value);
+}
+document.getElementById('requestBtn').onclick = async ()=>{
+  const title = document.getElementById('title').value;
+  const purpose = document.getElementById('purpose').value;
+  const content = src.value;
+  const res = await fetch('/api/request-page',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({title,purpose,content})});
+  const data = await res.json();
+  if(data.error){
+    document.getElementById('editorMsg').textContent = data.message || data.error;
+  } else {
+    document.getElementById('editorMsg').textContent = 'Requested. Wait for admin approval.';
+  }
+}
+
+// basic image upload
+uploadBtn.onclick = async ()=>{
+  if(!imgFile.files[0]) return alert('Pick file');
+  const form = new FormData();
+  form.append('file', imgFile.files[0]);
+  const r = await fetch('/api/upload',{method:'POST',body:form});
+  const j = await r.json();
+  if(j.ok){
+    src.value += `\n<img src="${j.url}" style="transform: scale(1);">`;
+    preview.innerHTML = parseWiki(src.value);
+  } else alert('Upload failed');
+}
+
+document.getElementById('imgScale').oninput = (e)=>{
+  const v = e.target.value;
+  // naive: replace last image transform in preview if exists
+  preview.querySelectorAll('img').forEach(img=> img.style.transform = `scale(${v})`);
+}
+
+function insertAtCursor(before, after){
+  const el = src;
+  const start = el.selectionStart, end = el.selectionEnd;
+  el.value = el.value.substring(0,start) + before + el.value.substring(start,end) + after + el.value.substring(end);
+  el.focus();
+}
+
+// parseWiki function is included in js/app.js (shared)
+</script>
+</body>
+</html>
