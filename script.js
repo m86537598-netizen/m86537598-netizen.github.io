@@ -13,7 +13,7 @@ const defaultData = {
     pages: [
         { 
             title: "Main Page", 
-            content: "Welcome to the '''Dandy World Skins Wiki'''!\n\nThis is the community wiki for all Dandy World skins. \n\n[[Request a Page]] to contribute!\n\n{{Infobox|Dandy World|https://placehold.co/150}}", 
+            content: "Welcome to the '''Dandy World Skins Wiki'''!\n\nThis is the community wiki for all Dandy World skins. \n\n[[Request a Page]] to contribute!\n\n", 
             comments: [] 
         }
     ],
