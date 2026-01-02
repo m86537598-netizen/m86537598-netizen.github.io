@@ -8,7 +8,12 @@ const DB = {
         // The Admin Account
         { username: "BUBBLDEDS", password: "ERG98UESG9", isBanned: false }
     ],
-    pages: [
+    pages: [ 
+       {
+    title: "Vintage Boxten",
+    content: "TBA",
+    comments: []
+   },
         {
             title: "Main Page",
             content: "Welcome to the '''Dandy World Skins Wiki'''!\n\nThis is the community wiki. \n\n[[Request a Page]] to contribute!\n\n{{Infobox|Dandy World|https://placehold.co/150}}",
