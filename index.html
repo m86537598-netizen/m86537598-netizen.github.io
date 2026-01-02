@@ -12,50 +12,21 @@
 
     <nav class="navbar">
         <div class="logo-area">
-            <img src="DWWIKILOGO.png" alt="Dandy World Skins Wiki" id="main-logo" onclick="app.renderPage('Main Page')">
+            <img src="DWWIKILOGO.png" alt="Logo" id="main-logo" onclick="app.loadPage('Main Page')">
         </div>
         <div class="nav-controls">
-            <select id="theme-selector" onchange="app.setTheme(this.value)">
-                <option value="theme-green" selected>Default (Green)</option>
+            <select onchange="app.setTheme(this.value)">
+                <option value="theme-green">Green</option>
                 <option value="theme-light">Light</option>
                 <option value="theme-dark">Dark</option>
                 <option value="theme-gray">Gray</option>
             </select>
-            <div id="user-panel">
-                </div>
+            <div id="user-panel"></div>
         </div>
     </nav>
 
     <div class="container">
-        
-        <aside id="admin-sidebar" class="hidden">
-            <h3>Admin Dashboard</h3>
-            <button onclick="app.viewRequests()">View Page Requests</button>
-            <button onclick="app.viewUsers()">Manage Users</button>
-            <button onclick="app.createPageAdmin()">Force Create Page</button>
-        </aside>
-
-        <main id="content-display">
-            </main>
-
-        <div id="editor-area" class="hidden">
-            <h2>Page Editor</h2>
-            <div class="toolbar">
-                <button onclick="editor.insert('\'\'\'', '\'\'\'')"><b>Bold</b></button>
-                <button onclick="editor.insert('\'\'', '\'\'')"><i>Italic</i></button>
-                <button onclick="editor.insert('[[', ']]')">Link</button>
-                <button onclick="editor.insert('{{Highlight|', '|yellow}}')">Highlight</button>
-                <button onclick="editor.insert('{{Infobox|Title|ImageURL}}')">Infobox</button>
-                <button onclick="editor.insert('[[Image:', '|200|right]]')">Image</button>
-            </div>
-            <div class="split-view">
-                <textarea id="wiki-source" placeholder="Enter Wikitext here..."></textarea>
-                <div id="wiki-preview"></div>
-            </div>
-            <button class="btn-save" onclick="editor.save()">Save Page</button>
-            <button class="btn-cancel" onclick="editor.close()">Cancel</button>
-        </div>
-
+        <main id="content-display"></main>
     </div>
 
     <div id="modal-overlay" class="hidden">
@@ -65,6 +36,7 @@
         </div>
     </div>
 
+    <script src="database.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
