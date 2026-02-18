@@ -3,40 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dandy World Skins Wiki</title>
-    <link rel="icon" type="image/png" href="DWLOGO.png">
+    <title>Noggins! Wiki</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body class="theme-green">
-
-    <nav class="navbar">
-        <div class="logo-area">
-            <img src="DWWIKILOGO.png" alt="Logo" id="main-logo" onclick="app.loadPage('Main Page')">
+<body>
+    <header>
+        <div class="nav-top">
+            <div id="back-arrow" class="cartoony-arrow">←</div>
+            <h1>Noggins! Wiki</h1>
+            <div id="auth-section">
+                <button id="login-btn">Log In</button>
+                <span id="user-info"></span>
+            </div>
         </div>
-        <div class="nav-controls">
-            <select onchange="app.setTheme(this.value)">
-                <option value="theme-green">Green</option>
-                <option value="theme-light">Light</option>
-                <option value="theme-dark">Dark</option>
-                <option value="theme-gray">Gray</option>
-            </select>
-            <div id="user-panel"></div>
-        </div>
-    </nav>
+    </header>
 
-    <div class="container">
-        <main id="content-display"></main>
-    </div>
+    <main id="app">
+        <section id="home-page">
+            <h2>Latest Pages</h2>
+            <div id="page-grid" class="grid"></div>
+            <hr>
+            <div id="admin-panel" class="hidden">
+                <h3>Moderation Queue (Admin Only)</h3>
+                <div id="queue-grid" class="grid"></div>
+            </div>
+        </section>
 
-    <div id="modal-overlay" class="hidden">
-        <div id="modal-box">
-            <span class="close-modal" onclick="app.closeModal()">&times;</span>
-            <div id="modal-content"></div>
-        </div>
-    </div>
+        <section id="editor-page" class="hidden">
+            <div class="editor-controls">
+                <button onclick="setMode('edit')">Visual Edit</button>
+                <button onclick="setMode('source')">Source Code</button>
+                <div id="toolbar">
+                    <button onclick="execCmd('bold')"><b>B</b></button>
+                    <button onclick="execCmd('italic')"><i>I</i></button>
+                    <input type="color" id="highlightColor" title="Highlight">
+                    <input type="color" id="textColor" title="Text Color">
+                    <button onclick="triggerImage()">Add Image</button>
+                </div>
+            </div>
+            
+            <div id="visual-editor" contenteditable="true" class="paper"></div>
+            <textarea id="source-editor" class="paper hidden"></textarea>
+            
+            <button id="submit-page">Submit for Approval</button>
+        </section>
+    </main>
 
-    <script src="database.js"></script>
+    <input type="file" id="image-input" hidden accept="image/*">
     <script src="script.js"></script>
 </body>
 </html>
