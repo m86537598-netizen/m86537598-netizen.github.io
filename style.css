@@ -1,112 +1,68 @@
 :root {
-    /* DEFAULT GREEN THEME */
-    --bg-color: #f0f9f0;
-    --text-color: #1a1a1a;
-    --nav-bg: #2e7d32;
-    --nav-text: #ffffff;
-    --link-color: #1b5e20;
-    --border-color: #a5d6a7;
-    --box-bg: #ffffff;
-    --btn-primary: #388e3c;
-    --btn-hover: #2e7d32;
-    --highlight-default: #dcedc8;
+    --primary-blue: #3498db;
+    --dark-blue: #2980b9;
+    --bg-color: #f4f7f6;
 }
 
-/* THEMES */
-.theme-light {
-    --bg-color: #ffffff;
-    --text-color: #000000;
-    --nav-bg: #f8f9fa;
-    --nav-text: #333;
-    --link-color: #007bff;
-    --border-color: #ddd;
-    --box-bg: #fff;
-    --btn-primary: #007bff;
-    --btn-hover: #0056b3;
+body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); margin: 0; }
+
+.nav-top {
+    background: #fff;
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-.theme-dark {
-    --bg-color: #121212;
-    --text-color: #e0e0e0;
-    --nav-bg: #1e1e1e;
-    --nav-text: #fff;
-    --link-color: #bb86fc;
-    --border-color: #333;
-    --box-bg: #2c2c2c;
-    --btn-primary: #bb86fc;
-    --btn-hover: #9965f4;
+.cartoony-arrow {
+    font-size: 2rem;
+    cursor: pointer;
+    transition: transform 0.2s, color 0.2s;
+    font-weight: bold;
+    user-select: none;
 }
 
-.theme-gray {
-    --bg-color: #e0e0e0;
-    --text-color: #333;
-    --nav-bg: #616161;
-    --nav-text: #fff;
-    --link-color: #424242;
-    --border-color: #bdbdbd;
-    --box-bg: #f5f5f5;
-    --btn-primary: #757575;
-    --btn-hover: #424242;
+.cartoony-arrow:hover {
+    color: var(--primary-blue);
+    transform: scale(1.2) translateX(-5px);
 }
 
-body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; transition: 0.3s; }
-
-/* Navbar */
-.navbar { background-color: var(--nav-bg); color: var(--nav-text); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-#main-logo { height: 40px; cursor: pointer; }
-.nav-controls { display: flex; gap: 15px; align-items: center; }
-select { padding: 5px; border-radius: 4px; }
-
-/* Layout */
-.container { padding: 20px; max-width: 1200px; margin: 0 auto; display: flex; gap: 20px; }
-#content-display { flex: 1; background: var(--box-bg); padding: 20px; border: 1px solid var(--border-color); border-radius: 8px; min-height: 80vh; position: relative; }
-
-/* Admin Sidebar */
-#admin-sidebar { width: 200px; background: var(--box-bg); padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; height: fit-content; }
-#admin-sidebar button { width: 100%; margin-bottom: 5px; cursor: pointer; }
-
-/* Wiki Elements */
-h1, h2, h3 { border-bottom: 1px solid var(--border-color); padding-bottom: 5px; }
-a { color: var(--link-color); text-decoration: none; font-weight: bold; cursor: pointer;}
-a:hover { text-decoration: underline; }
-.wiki-highlight { padding: 2px 5px; border-radius: 3px; }
-
-/* Infobox */
-.infobox {
-    float: right;
-    width: 250px;
-    background: var(--bg-color);
-    border: 2px solid var(--border-color);
-    padding: 10px;
-    margin: 0 0 10px 10px;
-    border-radius: 5px;
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px;
 }
-.infobox img { width: 100%; height: auto; border-radius: 5px; }
-.infobox-title { text-align: center; font-weight: bold; font-size: 1.2em; background: var(--nav-bg); color: var(--nav-text); padding: 5px; margin: -10px -10px 10px -10px; }
 
-/* Editor */
-.split-view { display: flex; gap: 10px; height: 400px; margin-top: 10px; }
-textarea, #wiki-preview { flex: 1; padding: 10px; border: 1px solid var(--border-color); border-radius: 5px; overflow-y: auto; background: var(--box-bg); color: var(--text-color); }
-.toolbar button { margin-right: 5px; padding: 5px 10px; }
+.page-card {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    text-align: center;
+}
 
-/* Comments */
-.comments-section { margin-top: 50px; border-top: 2px solid var(--border-color); padding-top: 20px; }
-.comment { border: 1px solid var(--border-color); padding: 10px; margin-bottom: 10px; background: rgba(0,0,0,0.05); border-radius: 5px; }
-.comment-meta { font-size: 0.8em; color: #666; margin-bottom: 5px; }
+.page-card img { width: 100%; height: 150px; object-fit: cover; }
 
-/* Utilities */
+.paper {
+    width: 80%;
+    min-height: 400px;
+    margin: 20px auto;
+    background: white;
+    padding: 40px;
+    border: 1px solid #ddd;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
 .hidden { display: none !important; }
-.btn-primary { background: var(--btn-primary); color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; }
-.btn-save { background: #28a745; color: white; padding: 10px; width: 100%; border: none; margin-top: 10px; cursor: pointer; }
-.red-popup { color: red; font-weight: bold; animation: shake 0.5s; }
 
-/* Images & Tweening */
-.wiki-image { max-width: 100%; transition: all 0.5s ease-in-out; }
-.wiki-icon { height: 1.2em; vertical-align: middle; }
-@keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
-
-/* Modal */
-#modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-#modal-box { background: var(--box-bg); padding: 20px; width: 400px; border-radius: 8px; position: relative; }
-.close-modal { position: absolute; top: 10px; right: 15px; font-size: 20px; cursor: pointer; }
-input, textarea { width: 95%; padding: 8px; margin: 5px 0; background: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color); }
+/* Resizable Images */
+.paper img {
+    max-width: 100%;
+    resize: both;
+    overflow: auto;
+    display: inline-block;
+    float: left;
+    margin-right: 15px;
+}
